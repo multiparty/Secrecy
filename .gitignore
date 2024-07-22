@@ -17,6 +17,7 @@ build
 !src/external-lib
 src/external-lib/*
 !src/external-lib/CMakeLists.txt
-
+include/external-lib/nlohmann
 
 deployment/results
+
