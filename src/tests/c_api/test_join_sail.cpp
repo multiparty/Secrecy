@@ -55,18 +55,13 @@ int main(int argc, char** argv) {
     Data r1[ROWS1][COLS1];
     Data r2[ROWS2][COLS2];
 
-    std::cout << "Input:" << std::endl;
-    std::cout << " r1:" << std::endl;
     for (int i = 0; i < ROWS1; ++i) {
         r1[i][0] = js["r1"][i][0].get<int>();
         r1[i][1] = js["r1"][i][1].get<int>();
-        std::cout << "  [" << r1[i][0] << ", " << r1[i][1] << "]" << std::endl;
     }
-    std::cout << " r2:" << std::endl;
     for (int i = 0; i < ROWS2; ++i) {
         r2[i][0] = js["r2"][i][0].get<int>();
         r2[i][1] = js["r2"][i][1].get<int>();
-        std::cout << "  [" << r2[i][0] << ", " << r2[i][1] << "]" << std::endl;
     }
 
     init_sharing(); // Runs sodium_init and checks if itinialization of sodium was successful
@@ -102,15 +97,15 @@ int main(int argc, char** argv) {
     **/
 
     //Send shares to P2 (Second random val generated in generate_bool_share and XORed secret are sent starting from &r1s2[0][0] to all 5*2 vals)
-    MPI_Send(&r1s2[0][0], 5*2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s2[0][0], 4*2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r1s3[0][0], 5*2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s3[0][0], 4*2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r2s3[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
     //Send shares to P3
-    MPI_Send(&r1s3[0][0], 5*2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s3[0][0], 4*2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r1s1[0][0], 5*2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s1[0][0], 4*2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r2s3[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
   }
   else if (rank == 1) { //P2
 
@@ -124,16 +119,16 @@ int main(int argc, char** argv) {
        status: Status object which contains information about the received message (e.g., source, tag). MPI_STATUS_IGNORE can be used if this information is not needed.
 **/
 
-    MPI_Recv(&r1s1[0][0], 5*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s1[0][0], 4*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r1s2[0][0], 5*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s2[0][0], 4*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
   else { //P3
-    MPI_Recv(&r1s1[0][0], 5*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s1[0][0], 4*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r1s2[0][0], 5*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s2[0][0], 4*2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
   //exchange seeds
@@ -181,65 +176,28 @@ int main(int argc, char** argv) {
   Data out[ROWS1*ROWS2]; /** TODO: only rank0 needs to allocate **/
   open_b_array(res, ROWS1*ROWS2, out);
 
-    // assert and print result
+  // assert and print result
   if (rank == 0) {
-    int from_1, from_2;
-    #if not DEBUG
-      printf("\n");
-      printf("Matched indexes \n");
-      std::cout << "  [T1, T2]" << std::endl;
-    #endif
-    for (int i=0; i<ROWS1*ROWS2; i++) {
-        // receive remote res from two other parties
-        MPI_Status status;
-        int rc;
-        rc = MPI_Recv(&from_1, 1, MPI_INT, 1, RES_TAG, MPI_COMM_WORLD, &status);
-        if (rc != MPI_SUCCESS) {
-            fprintf(stderr, "Error receiving from process 1 at index %d\n", i);
-            MPI_Abort(MPI_COMM_WORLD, rc);
-        }
-
-        rc = MPI_Recv(&from_2, 1, MPI_INT, 2, RES_TAG, MPI_COMM_WORLD, &status);
-        if (rc != MPI_SUCCESS) {
-            fprintf(stderr, "Error receiving from process 2 at index %d\n", i);
-            MPI_Abort(MPI_COMM_WORLD, rc);
-        }
-        
-        int lsb = (out[i]^from_1^from_2) & 1; // Compute the final result
-        
-        if(DEBUG){
-          // XOR all three shares and check LSB to confirm equality/inequality
-          std::cout << "index " << i << lsb << ", " << out[i] << ", " << from_1 << ", " << from_2 << std::endl;
-          if (i==0 || i==9 || i==18) {
-            assert(lsb == 1);
-          }
-          else {
-            assert(lsb == 0);
-          }
-        }
-        else{
-          if(lsb == 1){
-            int t1 = i / ROWS2;
-            int t2 = i % ROWS2;
-            std::cout << "  [ " << t1 << ",  " << t2 << "]" << std::endl;
-          }
-        }
-    }
-    #if DEBUG
-       printf("TEST JOIN: OK.\n");
-    #endif
-  }
-
-  if (rank == 1 || rank == 2) {
+      std::cout << "[T1, T2]" << std::endl;
       for (int i=0; i<ROWS1*ROWS2; i++) {
-          int rc = MPI_Send(&out[i], 1, MPI_INT, 0, RES_TAG, MPI_COMM_WORLD);
-          if (rc != MPI_SUCCESS) {
-                fprintf(stderr, "Error sending from process %d at index %d\n", rank, i);
-                MPI_Abort(MPI_COMM_WORLD, rc);
-          }
+          #if DEBUG
+            printf("[%d] %lld\t", i, out[i]);
+            if (i==0 || i==9 || i==18) {
+                assert(out[i] == 1);
+            }
+            else {
+                assert(out[i] == 0);
+            }
+          #else 
+            if(out[i] == 1){
+              int t1 = i / ROWS2;
+              int t2 = i % ROWS2;
+              std::cout << "[" << t1 << ",  " << t2 << "]" << std::endl;
+            }
+          #endif
       }
+      printf("TEST JOIN: OK.\n");
   }
-
   // tear down communication
   MPI_Finalize();
   return 0;
