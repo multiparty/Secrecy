@@ -6,11 +6,26 @@ using json = nlohmann::json;
 
 #define DEBUG 0
 #define SHARE_TAG 193
-#define ROWS1 5
-#define COLS1 2
-#define ROWS2 4
-#define COLS2 2
 #define RES_TAG 192
+
+
+json import_JSON(const std::string& path) {
+    json js;
+    std::ifstream json_file(path); // Use the first command-line argument as the file path
+    if (!json_file.is_open()) {
+        std::cerr << "Unable to open file: " << path << std::endl;
+        return 1;
+    }
+    try {
+        json_file >> js;
+    } catch (json::parse_error& e) {
+        std::cerr << "Parse error: " << e.what() << std::endl;
+        return 1;
+    }
+    json_file.close();
+    return js;
+}
+
 
 int main(int argc, char** argv) {
 
@@ -27,6 +42,12 @@ int main(int argc, char** argv) {
   const int pred = get_pred(); // Checks initialization and returns an assigned rank/index of a predecessor party
   const int succ = get_succ(); // Checks initialization and returns an assigned rank/index of successor party
 
+  json js = import_JSON(argv[1]);
+  int ROWS1 = static_cast<int>(js["r1"].size());
+  int COLS1 = static_cast<int>(js["r1"][0].size());
+  int ROWS2 = static_cast<int>(js["r2"].size());
+  int COLS2 = static_cast<int>(js["r2"][0].size());
+
   // Boolean Share (long long) r1: first relation with 2 cols and 5 rows, r2: second relation with 2 cols and 4 rows
   BShare r1s1[ROWS1][COLS1], r1s2[ROWS1][COLS1], r1s3[ROWS1][COLS1],
          r2s1[ROWS2][COLS2], r2s2[ROWS2][COLS2], r2s3[ROWS2][COLS2];
@@ -37,19 +58,6 @@ int main(int argc, char** argv) {
   **/
 
   if (rank == 0) { //P1: Party-1
-    json js;
-    std::ifstream json_file(argv[1]); // Use the first command-line argument as the file path
-    if (!json_file.is_open()) {
-        std::cerr << "Unable to open file: " << argv[1] << std::endl;
-        return 1;
-    }
-    try {
-        json_file >> js;
-    } catch (json::parse_error& e) {
-        std::cerr << "Parse error: " << e.what() << std::endl;
-        return 1;
-    }
-    json_file.close();
 
     // Store Original Data (long long) :Initialize input data and shares
     Data r1[ROWS1][COLS1];
