@@ -55,12 +55,9 @@ int main(int argc, char** argv) {
      (not like party 1 holds r1s1 and r1s2, and so that operation amongst three in same address can recover the secret)
   **/
 
-  init_sharing(); // Runs sodium_init and checks if itinialization of sodium was successful
-  MPI_Barrier(MPI_COMM_WORLD);
-
   if (rank == 0) { //P1: Party-1
+    init_sharing(); // Runs sodium_init and checks if itinialization of sodium was successful
 
-    // Store Original Data (long long) :Initialize input data and shares
     Data r1[ROWS1][COLS1];
 
     for (int i = 0; i < ROWS1; ++i) {
@@ -75,16 +72,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    
-    /** int MPI_Send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);
-         - buf: Starting address of the send buffer (the data to be sent).
-         - count: Number of elements in the send buffer.
-         - datatype: Data type of each send buffer element (e.g., MPI_INT, MPI_FLOAT, MPI_LONG_LONG).
-         - dest: Rank of the destination process within the communicator (1 and 2 corresponds to party 2 and 3).
-         - tag: Message tag to identify the message (193).
-         - comm: Communicator (MPI_COMM_WORLD for all processes is standard).
-    **/
-
     //Send shares to P2 (Second random val generated in generate_bool_share and XORed secret are sent starting from &r1s2[0][0] to all 5*2 vals)
     MPI_Send(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
     MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
@@ -93,13 +80,10 @@ int main(int argc, char** argv) {
     MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
     MPI_Send(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
     //Receive from P2
     MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     
-    MPI_Barrier(MPI_COMM_WORLD);
   }
   else if (rank == 1) { //P2
 
@@ -117,23 +101,10 @@ int main(int argc, char** argv) {
         }
     }
 
-
-/**   int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status);
-       buf: Starting address of the receive buffer (where the data will be stored).
-       count: Number of elements in the receive buffer.
-       datatype: Data type of each receive buffer element.
-       source: Rank of the source process within the communicator.
-       tag: Message tag to identify the message.
-       comm: Communicator (usually MPI_COMM_WORLD for all processes).
-       status: Status object which contains information about the received message (e.g., source, tag). MPI_STATUS_IGNORE can be used if this information is not needed.
-**/
-
     // Receive from P1
     MPI_Recv(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     
-    MPI_Barrier(MPI_COMM_WORLD);
-
     //Send shares to P1
     MPI_Send(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD);
     MPI_Send(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD);
@@ -142,21 +113,16 @@ int main(int argc, char** argv) {
     MPI_Send(&r2s3[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
     MPI_Send(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
   }
   else { //P3
     // Receive from P1
     MPI_Recv(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
     // Receive from P2
     MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     
-    MPI_Barrier(MPI_COMM_WORLD);
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
@@ -201,11 +167,11 @@ int main(int argc, char** argv) {
 
   // Equality Check of left and right cols and True or False is stored in res
   join_b(in1, in2, p, res);
-
+  MPI_Barrier(MPI_COMM_WORLD);
   // reveal the result
   Data out[ROWS1*ROWS2]; /** TODO: only rank0 needs to allocate **/
   open_b_array(res, ROWS1*ROWS2, out);
-
+  MPI_Barrier(MPI_COMM_WORLD);
   // assert and print result
   if (rank == 0) {
       #if DEBUG
