@@ -6,8 +6,6 @@ using json = nlohmann::json;
 
 #define DEBUG 1
 #define SHARE_TAG 193
-#define RES_TAG 192
-
 
 json import_JSON(const std::string& path) {
     json js;
@@ -71,16 +69,8 @@ int main(int argc, char** argv) {
     }
 
     // generate r1 shares 
-    /**
-       1) pass random values to s1 and s2
-       2) XOR these randomly generated values
-       3) XOR the result of 2) with original secret
-       4) The resulting secret is stored in s3
-    **/
     for (int i=0; i<ROWS1; i++) { // Iterates over each row of r1
         for (int j=0; j<COLS1; j++) { // Iterates over each column of r1
-            // & passes address of the value, instead of the value itself.
-            // * inside generate_bool_share reference the address given by & and modifies the value at the address
             generate_bool_share(r1[i][j], &r1s1[i][j], &r1s2[i][j], &r1s3[i][j]);
         }
     }
@@ -165,6 +155,7 @@ int main(int argc, char** argv) {
     // Receive from P2
     MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    
     MPI_Barrier(MPI_COMM_WORLD);
   }
 

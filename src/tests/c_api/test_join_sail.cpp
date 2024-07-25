@@ -6,7 +6,6 @@ using json = nlohmann::json;
 
 #define DEBUG 0
 #define SHARE_TAG 193
-#define RES_TAG 192
 
 
 json import_JSON(const std::string& path) {
