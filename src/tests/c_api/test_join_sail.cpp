@@ -1,3 +1,5 @@
+#include <iostream>
+#include <vector>
 #include <stdio.h>
 #include <assert.h>
 #include <nlohmann/json.hpp>
@@ -6,7 +8,7 @@ using json = nlohmann::json;
 
 #define DEBUG 0
 #define SHARE_TAG 193
-
+#define RESULT_TAG 197
 
 json import_JSON(const std::string& path) {
     json js;
@@ -199,16 +201,40 @@ int main(int argc, char** argv) {
           }
         }
       #else 
-        std::cout << "[T1, T2]" << std::endl;
+        std::cout << "/// Joined Table ///" << std::endl;
         for (int i=0; i<ROWS1*ROWS2; i++) {
           if(out[i] == 1){
             int t1 = i / ROWS2;
             int t2 = i % ROWS2;
-            std::cout << "[" << t1 << ",  " << t2 << "]" << std::endl;
+            long long val0 = js["r1"][t1][0];
+            long long val1 = js["r1"][t1][1];
+            MPI_Send(&val0, 1, MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
+            MPI_Send(&val1, 1, MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
+            MPI_Send(&t2, 1, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
+
+            // long long rec_val;
+            long long rec_val;
+            MPI_Recv(&rec_val, 1, MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            std::cout << "[" << val0 << ", " << val1 << ", " << rec_val<<  "]" << std::endl;
           }
         }
       #endif
+  } 
+  else if (rank == 1){
+        for (int i=0; i<3; i++) { //TODO: Fix
+          long long rec_val0;
+          long long rec_val1;
+          int t2;
+          MPI_Recv(&rec_val0, 1, MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          MPI_Recv(&rec_val1, 1, MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+          MPI_Recv(&t2, 1, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+          // send back to p1
+          long long send_val = js["r2"][t2][1];
+          MPI_Send(&send_val, 1, MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
+        }
   }
+
   // tear down communication
   MPI_Finalize();
   return 0;
