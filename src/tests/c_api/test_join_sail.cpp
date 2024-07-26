@@ -57,35 +57,42 @@ int main(int argc, char** argv) {
   **/
 
   if (rank == 0) { //P1: Party-1
+    init_sharing(); // Runs sodium_init and checks if itinialization of sodium was successful
 
-    // Store Original Data (long long) :Initialize input data and shares
     Data r1[ROWS1][COLS1];
-    Data r2[ROWS2][COLS2];
 
     for (int i = 0; i < ROWS1; ++i) {
         r1[i][0] = js["r1"][i][0].get<int>();
         r1[i][1] = js["r1"][i][1].get<int>();
     }
+
+    // generate r1 shares 
+    for (int i=0; i<ROWS1; i++) { // Iterates over each row of r1
+        for (int j=0; j<COLS1; j++) { // Iterates over each column of r1
+            generate_bool_share(r1[i][j], &r1s1[i][j], &r1s2[i][j], &r1s3[i][j]);
+        }
+    }
+
+    //Send shares to P2 (Second random val generated in generate_bool_share and XORed secret are sent starting from &r1s2[0][0] to all 5*2 vals)
+    MPI_Send(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
+    
+    //Send shares to P3
+    MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+
+    //Receive from P2
+    MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    
+  }
+  else if (rank == 1) { //P2
+
+    Data r2[ROWS2][COLS2];
+
     for (int i = 0; i < ROWS2; ++i) {
         r2[i][0] = js["r2"][i][0].get<int>();
         r2[i][1] = js["r2"][i][1].get<int>();
-    }
-
-    init_sharing(); // Runs sodium_init and checks if itinialization of sodium was successful
-
-    // generate r1 shares 
-    /**
-       1) pass random values to s1 and s2
-       2) XOR these randomly generated values
-       3) XOR the result of 2) with original secret
-       4) The resulting secret is stored in s3
-    **/
-    for (int i=0; i<ROWS1; i++) { // Iterates over each row of r1
-        for (int j=0; j<COLS1; j++) { // Iterates over each column of r1
-            // & passes address of the value, instead of the value itself.
-            // * inside generate_bool_share reference the address given by & and modifies the value at the address
-            generate_bool_share(r1[i][j], &r1s1[i][j], &r1s2[i][j], &r1s3[i][j]);
-        }
     }
 
     // generate r2 shares
@@ -94,49 +101,45 @@ int main(int argc, char** argv) {
             generate_bool_share(r2[i][j], &r2s1[i][j], &r2s2[i][j], &r2s3[i][j]);
         }
     }
-    /** int MPI_Send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);
-         - buf: Starting address of the send buffer (the data to be sent).
-         - count: Number of elements in the send buffer.
-         - datatype: Data type of each send buffer element (e.g., MPI_INT, MPI_FLOAT, MPI_LONG_LONG).
-         - dest: Rank of the destination process within the communicator (1 and 2 corresponds to party 2 and 3).
-         - tag: Message tag to identify the message (193).
-         - comm: Communicator (MPI_COMM_WORLD for all processes is standard).
-    **/
 
-    //Send shares to P2 (Second random val generated in generate_bool_share and XORed secret are sent starting from &r1s2[0][0] to all 5*2 vals)
-    MPI_Send(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s3[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD);
-    //Send shares to P3
-    MPI_Send(&r1s3[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s3[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-    MPI_Send(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
-  }
-  else if (rank == 1) { //P2
-
-/**   int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status);
-       buf: Starting address of the receive buffer (where the data will be stored).
-       count: Number of elements in the receive buffer.
-       datatype: Data type of each receive buffer element.
-       source: Rank of the source process within the communicator.
-       tag: Message tag to identify the message.
-       comm: Communicator (usually MPI_COMM_WORLD for all processes).
-       status: Status object which contains information about the received message (e.g., source, tag). MPI_STATUS_IGNORE can be used if this information is not needed.
-**/
-
+    // Receive from P1
     MPI_Recv(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    
+    //Send shares to P1
+    MPI_Send(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD);
+    
+    //Send shares to P3
+    MPI_Send(&r2s3[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+    MPI_Send(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 2, SHARE_TAG, MPI_COMM_WORLD);
+
+
+    // Copy data using nested for loops
+    for (int i = 0; i < ROWS2; ++i) {
+        for (int j = 0; j < COLS2; ++j) {
+            r2s1[i][j] = r2s2[i][j];
+        }
+    }
+
+    for (int i = 0; i < ROWS2; ++i) {
+        for (int j = 0; j < COLS2; ++j) {
+            r2s2[i][j] = r2s3[i][j];
+        }
+    }
   }
   else { //P3
+    // Receive from P1
     MPI_Recv(&r1s1[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     MPI_Recv(&r1s2[0][0], ROWS1*COLS1, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 0, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    // Receive from P2
+    MPI_Recv(&r2s1[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(&r2s2[0][0], ROWS2*COLS2, MPI_LONG_LONG, 1, SHARE_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    
   }
+
+  MPI_Barrier(MPI_COMM_WORLD);
 
   //exchange seeds
   /** sending random bytes to successor(i.e., to party 2 if you are party 1), called seed_local
@@ -185,25 +188,26 @@ int main(int argc, char** argv) {
 
   // assert and print result
   if (rank == 0) {
-      std::cout << "[T1, T2]" << std::endl;
-      for (int i=0; i<ROWS1*ROWS2; i++) {
-          #if DEBUG
-            printf("[%d] %lld\t", i, out[i]);
-            if (i==0 || i==9 || i==18) {
-                assert(out[i] == 1);
-            }
-            else {
-                assert(out[i] == 0);
-            }
-          #else 
-            if(out[i] == 1){
-              int t1 = i / ROWS2;
-              int t2 = i % ROWS2;
-              std::cout << "[" << t1 << ",  " << t2 << "]" << std::endl;
-            }
-          #endif
-      }
-      printf("TEST JOIN: OK.\n");
+      #if DEBUG
+        for (int i=0; i<ROWS1*ROWS2; i++) {
+          printf("[%d] %lld\t", i, out[i]);
+          if (i==0 || i==9 || i==18) {
+              assert(out[i] == 1);
+          }
+          else {
+              assert(out[i] == 0);
+          }
+        }
+      #else 
+        std::cout << "[T1, T2]" << std::endl;
+        for (int i=0; i<ROWS1*ROWS2; i++) {
+          if(out[i] == 1){
+            int t1 = i / ROWS2;
+            int t2 = i % ROWS2;
+            std::cout << "[" << t1 << ",  " << t2 << "]" << std::endl;
+          }
+        }
+      #endif
   }
   // tear down communication
   MPI_Finalize();
