@@ -1,8 +1,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <iostream>
-#include <nlohmann/json.hpp>
+#include <fstream>
 #include <vector>
+#include <nlohmann/json.hpp>
 #include "../test-utils.h"
 using json = nlohmann::json;
 
@@ -57,7 +58,6 @@ int main(int argc, char** argv) {
         json js1 = import_JSON(argv[1]);
         ROWS1 = static_cast<int>(js1["r1"].size());
         COLS1 = static_cast<int>(js1["r1"][0].size());
-
         //////// Send ROWS1 and COLS1 to P2 and 3
         MPI_Send(&ROWS1, 1, MPI_INT, 1, INIT_TAG, MPI_COMM_WORLD);
         MPI_Send(&COLS1, 1, MPI_INT, 1, INIT_TAG, MPI_COMM_WORLD);
@@ -174,17 +174,33 @@ int main(int argc, char** argv) {
         MPI_Send(&size_to_send, 1, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
         MPI_Send(t2_index.data(), size_to_send, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
 
+        // JSON object to hold the results
+        nlohmann::json output_json = nlohmann::json::array();
+
         std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_send; i++) {
             int t1 = t1_index[i];
-            long long val0 = js1["r1"][t1][0];
+            long long index_val = js1["r1"][t1][0];
             long long val1 = js1["r1"][t1][1];
 
             // long long rec_val;
             long long rec_val;
             MPI_Recv(&rec_val, 1, MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cout << "[" << val0 << ", " << val1 << ", " << rec_val << "]" << std::endl;
+            std::cout << "[" << index_val << ", " << val1 << ", " << rec_val << "]" << std::endl;
+            
+            // Create a JSON object for the current entry
+            nlohmann::json entry = {
+              {"index_val", index_val},
+              {"my_val", val1},
+              {"their_val", rec_val}
+            };
+
+            // Add the entry to the output JSON array
+            output_json.push_back(entry);
         }
+        std::ofstream json_file("output.json");
+        json_file << output_json.dump(4); // Pretty print with 4 spaces
+        json_file.close();
 #endif
     } else if (rank == 1) {  // P2
         init_sharing();      // Runs sodium_init and checks if itinialization of sodium was successful
