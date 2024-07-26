@@ -31,8 +31,8 @@ json import_JSON(const std::string& path) {
 int main(int argc, char** argv) {
 
   // Checking json file path
-  if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_json_file>" << std::endl;
+  if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " <path_to_json_file for P1>" << " <path_to_json_file for P2>" << std::endl;
         return 1;
   }
 
@@ -43,11 +43,12 @@ int main(int argc, char** argv) {
   const int pred = get_pred(); // Checks initialization and returns an assigned rank/index of a predecessor party
   const int succ = get_succ(); // Checks initialization and returns an assigned rank/index of successor party
 
-  json js = import_JSON(argv[1]);
-  int ROWS1 = static_cast<int>(js["r1"].size());
-  int COLS1 = static_cast<int>(js["r1"][0].size());
-  int ROWS2 = static_cast<int>(js["r2"].size());
-  int COLS2 = static_cast<int>(js["r2"][0].size());
+  json js1 = import_JSON(argv[1]);
+  json js2 = import_JSON(argv[2]);
+  int ROWS1 = static_cast<int>(js1["r1"].size());
+  int COLS1 = static_cast<int>(js1["r1"][0].size());
+  int ROWS2 = static_cast<int>(js2["r2"].size());
+  int COLS2 = static_cast<int>(js2["r2"][0].size());
 
   // Boolean Share (long long) r1: first relation with 2 cols and 5 rows, r2: second relation with 2 cols and 4 rows
   BShare r1s1[ROWS1][COLS1], r1s2[ROWS1][COLS1], r1s3[ROWS1][COLS1],
@@ -64,8 +65,8 @@ int main(int argc, char** argv) {
     Data r1[ROWS1][COLS1];
 
     for (int i = 0; i < ROWS1; ++i) {
-        r1[i][0] = js["r1"][i][0].get<int>();
-        r1[i][1] = js["r1"][i][1].get<int>();
+        r1[i][0] = js1["r1"][i][0].get<int>();
+        r1[i][1] = js1["r1"][i][1].get<int>();
     }
 
     // generate r1 shares 
@@ -93,8 +94,8 @@ int main(int argc, char** argv) {
     Data r2[ROWS2][COLS2];
 
     for (int i = 0; i < ROWS2; ++i) {
-        r2[i][0] = js["r2"][i][0].get<int>();
-        r2[i][1] = js["r2"][i][1].get<int>();
+        r2[i][0] = js2["r2"][i][0].get<int>();
+        r2[i][1] = js2["r2"][i][1].get<int>();
     }
 
     // generate r2 shares
@@ -221,8 +222,8 @@ int main(int argc, char** argv) {
         std::cout << "/// Joined Table ///" << std::endl;
         for (int i=0; i<size_to_send; i++) {
             int t1 = t1_index[i];
-            long long val0 = js["r1"][t1][0];
-            long long val1 = js["r1"][t1][1];
+            long long val0 = js1["r1"][t1][0];
+            long long val1 = js1["r1"][t1][1];
             
             // long long rec_val;
             long long rec_val;
@@ -245,7 +246,7 @@ int main(int argc, char** argv) {
           int t2 = t2_index[i];
 
           // send back to p1
-          long long send_val = js["r2"][t2][1];
+          long long send_val = js2["r2"][t2][1];
           MPI_Send(&send_val, 1, MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
         }
   }
