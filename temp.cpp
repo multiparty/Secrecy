@@ -78,3 +78,29 @@ BShare exchange_shares(BShare s1) {
                                             MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   return s2;
 }
+
+void send_b_array(BShare *s, int len, Data res[]) {
+  // P2, P3 send their shares to P1
+  if (rank == 1 || rank == 2) {
+      MPI_Send(s, len, MPI_LONG_LONG, 0, OPEN_MSG_TAG, MPI_COMM_WORLD);
+  }
+  else if (rank == 0) {
+    BShare *msg = (BShare*) malloc(len*sizeof(BShare));
+    assert(msg!=NULL);
+    // P1 receives shares from P2, P3
+    MPI_Recv(msg, len, MPI_LONG_LONG, 1, OPEN_MSG_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    for (int i=0; i<len; i++) {
+      res[i] = s[i] ^ msg[i];
+    }
+
+    MPI_Recv(msg, len, MPI_LONG_LONG, 2, OPEN_MSG_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    for (int i=0; i<len; i++) {
+      res[i] = res[i] ^ msg[i];
+    }
+    free(msg);
+  }
+  else {
+    fprintf(stderr, "ERROR: Invalid rank %d.\n", rank);
+    MPI_Abort(MPI_COMM_WORLD, 1);
+  }
+}
