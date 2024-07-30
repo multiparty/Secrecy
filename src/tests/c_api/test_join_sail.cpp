@@ -179,21 +179,33 @@ int main(int argc, char** argv) {
 
         std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
+            nlohmann::json entry;
+            
+            // Index/Key Val
             int t1 = t1_index[i];
             long long index_val = js1["r1"][t1][0];
-            long long val1 = js1["r1"][t1][1];
+            entry["index_val"] = index_val;
+            std::cout << "[" << index_val;
 
-            long long rec_val; //= vector[COLS2];
-            MPI_Recv(&rec_val, 1, MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cout << "[" << index_val << ", " << val1 << ", " << rec_val << "]" << std::endl;
-            
-            // Create a JSON object for the current entry
-            nlohmann::json entry = {
-              {"index_val", index_val},
-              {"my_val", val1},
-              {"their_val", rec_val}
-            };
+            // Own Table
+            std::vector<int> send_vals(COLS1-1);
+            for(int j = 1; j < COLS1; j++){
+                int curr_val = js1["r1"][t1][j];
+                send_vals[j-1] = curr_val;
+                entry["own_val" + std::to_string(j)] = curr_val;
+                std::cout << ", " << curr_val;
+            }
 
+            // Their Table
+            std::vector<int> rec_vals(COLS2-1);
+            MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (size_t i = 0; i < rec_vals.size(); ++i) {
+               int curr_val = rec_vals[i];
+               entry["their_val" + std::to_string(i)] = curr_val;
+               std::cout << ", " << curr_val;
+            }
+            std::cout << "]" << std::endl;
+ 
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
@@ -318,8 +330,11 @@ int main(int argc, char** argv) {
             int t2 = t2_index[i];
 
             // send back to p1
-            long long send_val = js2["r2"][t2][1];
-            MPI_Send(&send_val, 1, MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
+            std::vector<int> send_vals(COLS2-1);
+            for(int j = 1; j < COLS2; j++){
+                send_vals[j-1] = js2["r2"][t2][j];
+            }
+            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
         }
     } else {  // P3
 
