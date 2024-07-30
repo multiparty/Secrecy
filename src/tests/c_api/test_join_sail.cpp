@@ -170,21 +170,20 @@ int main(int argc, char** argv) {
         }
 
         // Send Size of t2 index
-        int size_to_send = t2_index.size();
-        MPI_Send(&size_to_send, 1, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
-        MPI_Send(t2_index.data(), size_to_send, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
+        int size_to_receive = t2_index.size();
+        MPI_Send(&size_to_receive, 1, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
+        MPI_Send(t2_index.data(), size_to_receive, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
 
         // JSON object to hold the results
         nlohmann::json output_json = nlohmann::json::array();
 
         std::cout << "/// Joined Table ///" << std::endl;
-        for (int i = 0; i < size_to_send; i++) {
+        for (int i = 0; i < size_to_receive; i++) {
             int t1 = t1_index[i];
             long long index_val = js1["r1"][t1][0];
             long long val1 = js1["r1"][t1][1];
 
-            // long long rec_val;
-            long long rec_val;
+            long long rec_val; //= vector[COLS2];
             MPI_Recv(&rec_val, 1, MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::cout << "[" << index_val << ", " << val1 << ", " << rec_val << "]" << std::endl;
             
@@ -308,14 +307,14 @@ int main(int argc, char** argv) {
         open_b_array(res, ROWS1 * ROWS2, out);
 
         // Receive size of t2 index
-        int size_to_receive;
-        MPI_Recv(&size_to_receive, 1, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        int size_to_send;
+        MPI_Recv(&size_to_send, 1, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // Receive the actual t2_index
-        std::vector<int> t2_index(size_to_receive);
-        MPI_Recv(t2_index.data(), size_to_receive, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::vector<int> t2_index(size_to_send);
+        MPI_Recv(t2_index.data(), size_to_send, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        for (int i = 0; i < size_to_receive; i++) {
+        for (int i = 0; i < size_to_send; i++) {
             int t2 = t2_index[i];
 
             // send back to p1
