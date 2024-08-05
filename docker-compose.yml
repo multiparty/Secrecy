@@ -1,27 +1,27 @@
 version: '3.8'
 
 services:
-  secrecy_node1:
+  secrecy-node1:
     build: .
-    container_name: secrecy_node1
+    container_name: secrecy-node1
     networks:
       - mpi_network
-    command: ["sleep", "infinity"]
+    command: ["/usr/sbin/sshd", "-D"]
 
-  secrecy_node2:
+  secrecy-node2:
     build: .
-    container_name: secrecy_node2
+    container_name: secrecy-node2
     networks:
-      - mpi_network
-    command: ["sleep", "infinity"]
+      - mpi-network
+    command: ["/usr/sbin/sshd", "-D"]
 
-  secrecy_node3:
+  secrecy-node3:
     build: .
-    container_name: secrecy_node3
+    container_name: secrecy-node3
     networks:
-      - mpi_network
-    command: ["sleep", "infinity"]
+      - mpi-network
+    command: ["/usr/sbin/sshd", "-D"]
 
 networks:
-  mpi_network:
-    driver: bridge
+  mpi-network:
+     driver: bridge
