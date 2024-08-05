@@ -10,7 +10,20 @@ RUN apt-get update && apt-get install -y \
     openmpi-bin \
     pkg-config \
     git \
+    openssh-server \
     && rm -rf /var/lib/apt/lists/*
+
+# Create the SSH directory and set up the server
+RUN mkdir /var/run/sshd
+
+# Configure SSH to allow root login
+RUN echo 'root:password' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Allow SSH service to run in the background
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
 
 # Set the working directory
 WORKDIR /usr/src/app
@@ -29,6 +42,10 @@ WORKDIR /usr/src/app/Secrecy
 
 # Create build directory and run CMake
 RUN mkdir build && cd build && cmake .. && make
+
+# Allowing to run as a root
+ENV OMPI_ALLOW_RUN_AS_ROOT=1
+ENV OMPI_ALLOW_RUN_AS_RO OT_CONFIRM=1
 
 # Sleep indefinitely to allow for command line interaction
 CMD ["sleep", "infinity"]
