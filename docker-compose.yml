@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  secrecy_node1:
+    build: .
+    container_name: secrecy_node1
+    networks:
+      - mpi_network
+    command: ["sleep", "infinity"]
+
+  secrecy_node2:
+    build: .
+    container_name: secrecy_node2
+    networks:
+      - mpi_network
+    command: ["sleep", "infinity"]
+
+  secrecy_node3:
+    build: .
+    container_name: secrecy_node3
+    networks:
+      - mpi_network
+    command: ["sleep", "infinity"]
+
+networks:
+  mpi_network:
+    driver: bridge
