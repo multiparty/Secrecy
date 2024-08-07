@@ -29,9 +29,7 @@ RUN mkdir -p /root/.ssh && ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -q -N 
 WORKDIR /usr/src/app
 
 # Clone the main Secrecy repository
-RUN git clone https://github.com/Snafkin547/Secrecy.git && \
-cd Secrecy && \
-git checkout bdbaf17e72f05bebaeab6a27506d82a03c4e59ec
+RUN git clone https://github.com/multiparty/Secrecy.git
 
 # Create include/external-lib directory and clone the sql-parser repository inside it
 RUN mkdir -p Secrecy/include/external-lib \
