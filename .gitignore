@@ -19,4 +19,4 @@ src/external-lib/*
 !src/external-lib/CMakeLists.txt
 
 deployment/results
-
+include/external-lib/sql-parser
