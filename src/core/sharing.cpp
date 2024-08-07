@@ -15,9 +15,9 @@ void arithmetic_to_boolean(AShare *x, BShare *s1, BShare *s2, BShare *s3) {
 // Generate boolean shares
 void generate_bool_share(Data x, BShare *x1, BShare *x2, BShare *x3) {
   // Generate two random numbers
-  randombytes_buf(x1, sizeof(BShare));
+  randombytes_buf(x1, sizeof(BShare)); // Fills x1 with random values
   randombytes_buf(x2, sizeof(BShare));
-  *x3 = x ^ (*x1 ^ *x2);
+  *x3 = x ^ (*x1 ^ *x2); // * enables it to XOR the value in the address
 }
 
 // Generate arithmetic shares

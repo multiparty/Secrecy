@@ -11,8 +11,8 @@ PRIVATE void shift_greater(const BShare, const BShare, int, int, BShare*, BShare
 
 inline PRIVATE void shift_greater(const BShare x1, const BShare x2, int r, int len,
                                   BShare *shifted_1, BShare *shifted_2) {
-    int part_size = ((int) 1 << r);
-    int offset = (part_size >> 1), start;
+    int part_size = ((int) 1 << r); // bit val with rth iteration of rounds being 1
+    int offset = (part_size >> 1), start; // Half the part_size (=r/2-th iteration)
     BShare b1, b2;
     *shifted_1 = x1;
     *shifted_2 = x2;
@@ -170,8 +170,8 @@ BShare xor_b(BShare x, BShare y) {
 // Boolean equality
 BShare eq_b(BShare x1, BShare x2, BShare y1, BShare y2) {
     // compute bitwise x^y^1
-    BShare lbs = x1 ^ y1 ^ ~((BShare) 0); // local share
-    BShare rbs = x2 ^ y2 ^ ~((BShare) 0); // remote share
+    BShare lbs = x1 ^ y1 ^ ~((BShare) 0); // local share (XOR r1s1 and r2s1, and flip)
+    BShare rbs = x2 ^ y2 ^ ~((BShare) 0); // remote share (XOR r1s2 and r2s2, and flip)
     int numbits = sizeof(BShare) * 8;
     int rounds = (int) log2(numbits); // Number of rounds for oblivious equality
     BShare shifted_lbs, shifted_rbs;

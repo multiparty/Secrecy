@@ -30,7 +30,7 @@ int exchange_rsz_seeds(int succ_rank, int pred_rank) {
         return 1;
   }
 
-  // generate local seed
+  // generate local seed at location seed_local defaults to: 0
   randombytes_buf(&seed_local, sizeof(seed_local));
 
   // send seed to successor

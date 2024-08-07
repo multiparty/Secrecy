@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  secrecy-node1:
+    image: hicsail/secrecy-app:latest
+    hostname: secrecy-node1
+    networks:
+      - mpi-network
+
+  secrecy-node2:
+    image: hicsail/secrecy-app:latest
+    hostname: secrecy-node2
+    networks:
+      - mpi-network
+
+  secrecy-node3:
+    image: hicsail/secrecy-app:latest
+    hostname: secrecy-node3
+    networks:
+      - mpi-network
+
+networks:
+  mpi-network:
+    driver: bridge
