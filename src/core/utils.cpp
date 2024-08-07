@@ -114,10 +114,23 @@ void generate_random_table(Table *table, int rows, int columns) {
 }
 
 void allocate_bool_shares_table(BShareTable *table) {
+  // Calculate the length of memory needed for both row pointers and actual data elems
+  // BShare* is size of pointer addresses
+  // table->numRows takes # of rows and table->numCols takes # of cols in table
+  // Therefore, the first line returns the length of necessary pointers 
+  // and the second line computes the length of actual data/table 
+
   int length = sizeof(BShare*) * table->numRows +
                sizeof(BShare) * table->numRows * table->numCols;
+
+  // in1 and in2 are assigned memory size of the 'length', since ocntent was missing upon initialization, 
+  // malloc allocates a single block of memory
   table->content = (BShare**) malloc(length);
   assert(table->content != NULL);
+
+  // table->content is a pointer to the beginning of the allocated memory block
+  // table->content + table->numRows moves pointer passed raw pointers, resulting to point at act data elems
+  // This sets each row pointer to positions in the contiguous block of memory
   BShare* ptr = (BShare *)(table->content + table->numRows);
   for(int i = 0; i < table->numRows; i++)
     table->content[i] = (ptr + table->numCols * i);

@@ -223,13 +223,15 @@ void join_b(BShareTable input1, BShareTable input2, Predicate_B p, BShare result
 }
 
 // internal nested-loop equality join for boolean shares
+// left col and right col are to be joined
 PRIVATE void join_eq_b(BShareTable input1, BShareTable input2,
                         int leftcol, int rightcol, BShare result[]) {
   int i, j, k = 0;
 
   for (i = 0; i < input1.numRows; i++) {
     for (j = 0; j < input2.numRows; j++) {
-      // generate rnums for the next equality
+      // generate rnums for the next equality 
+      // basically compairing left cols of r1s1 and r1s2 pair or r2s1 and r2s2 pair
       result[k++] = eq_b(input1.content[i][leftcol], input1.content[i][leftcol + 1],
                          input2.content[j][rightcol], input2.content[j][rightcol + 1]);
     }
@@ -267,10 +269,10 @@ void join_eq_b_batch(BShareTable *input1, BShareTable *input2,
 
   assert( (end1<=input1->numRows) && (end2<=input2->numRows) );
 
-  int len1 = end1-start1;
+  int len1 = end1-start1; // length in input 1 to be processed
   int len2 = end2-start2;
-  int numbits = sizeof(BShare) * 8;
-  int numlevels = log2(numbits);
+  int numbits = sizeof(BShare) * 8; // num of bits in a BShare
+  int numlevels = log2(numbits); // num of levels
 
   // compute bitwise x^y^1
   int k=0;
