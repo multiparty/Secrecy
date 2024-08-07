@@ -2,26 +2,23 @@ version: '3.8'
 
 services:
   secrecy-node1:
-    build: .
-    container_name: secrecy-node1
+    image: hicsail/secrecy-app:latest
+    hostname: secrecy-node1
     networks:
       - mpi-network
-    command: ["/usr/sbin/sshd", "-D"]
 
   secrecy-node2:
-    build: .
-    container_name: secrecy-node2
+    image: hicsail/secrecy-app:latest
+    hostname: secrecy-node2
     networks:
       - mpi-network
-    command: ["/usr/sbin/sshd", "-D"]
 
   secrecy-node3:
-    build: .
-    container_name: secrecy-node3
+    image: hicsail/secrecy-app:latest
+    hostname: secrecy-node3
     networks:
       - mpi-network
-    command: ["/usr/sbin/sshd", "-D"]
 
 networks:
   mpi-network:
-     driver: bridge
+    driver: bridge

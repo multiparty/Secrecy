@@ -25,10 +25,6 @@ RUN mkdir -p /root/.ssh && ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -q -N 
     echo "Host *" >> /root/.ssh/config && \
     echo "    StrictHostKeyChecking no" >> /root/.ssh/config
 
-# Allow SSH service to run in the background
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
-
 # Set the working directory
 WORKDIR /usr/src/app
 
@@ -50,6 +46,8 @@ RUN mkdir build && cd build && cmake .. && make
 # Allowing to run as a root
 ENV OMPI_ALLOW_RUN_AS_ROOT=1
 ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+ENV OMPI_MCA_routed=direct
 
-# Sleep indefinitely to allow for command line interaction
-CMD ["sleep", "infinity"]
+# Allow SSH service to run in the background
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
