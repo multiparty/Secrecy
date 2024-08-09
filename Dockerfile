@@ -46,6 +46,8 @@ ENV OMPI_ALLOW_RUN_AS_ROOT=1
 ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 ENV OMPI_MCA_routed=direct
 
-# Allow SSH service to run in the background
+# Create a new user 'ec2-user' for non-root operations
+RUN useradd -m ec2-user
+USER ec2-user
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
