@@ -47,11 +47,11 @@ ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 ENV OMPI_MCA_routed=direct
 
 # Set OpenMPI environment variables
-ENV OMPI_MCA_oob_tcp_dynamic_ports=10000-10009 \
-    OMPI_MCA_btl_tcp_port_min_v4=10000 \
-    OMPI_MCA_btl_tcp_port_range_v4=10
+# ENV OMPI_MCA_oob_tcp_dynamic_ports=10000-10009 \
+#     OMPI_MCA_btl_tcp_port_min_v4=10000 \
+#     OMPI_MCA_btl_tcp_port_range_v4=10
 
 # Expose the necessary ports
-EXPOSE 10000-10009
+# EXPOSE 10000-10009
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
