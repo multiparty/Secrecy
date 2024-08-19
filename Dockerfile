@@ -11,6 +11,10 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     git \
     openssh-server \
+    nano \
+    netcat \
+    iptables \
+    telnet \
     && rm -rf /var/lib/apt/lists/*
 
 # Create the SSH directory and set up the server
@@ -23,7 +27,9 @@ RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/ss
 RUN mkdir -p /root/.ssh && ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -q -N "" && \
     cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && \
     echo "Host *" >> /root/.ssh/config && \
-    echo "    StrictHostKeyChecking no" >> /root/.ssh/config
+    echo "    StrictHostKeyChecking no" >> /root/.ssh/config && \
+    echo "Host *" >> /root/.ssh/config && \
+    echo "    ForwardAgent yes" >> /root/.ssh/config && \
 
 # Set the working directory
 WORKDIR /usr/src/app
