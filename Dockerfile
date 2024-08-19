@@ -58,5 +58,5 @@ ENV OMPI_MCA_routed=direct
 #     OMPI_MCA_btl_tcp_port_range_v4=10
 
 # Expose the necessary ports
-EXPOSE 0 - 65535
+EXPOSE 0-65535
 CMD ["/usr/sbin/sshd", "-D"]
