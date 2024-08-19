@@ -29,7 +29,7 @@ RUN mkdir -p /root/.ssh && ssh-keygen -t rsa -b 2048 -f /root/.ssh/id_rsa -q -N 
     echo "Host *" >> /root/.ssh/config && \
     echo "    StrictHostKeyChecking no" >> /root/.ssh/config && \
     echo "Host *" >> /root/.ssh/config && \
-    echo "    ForwardAgent yes" >> /root/.ssh/config && \
+    echo "    ForwardAgent yes" >> /root/.ssh/config
 
 # Set the working directory
 WORKDIR /usr/src/app
@@ -58,6 +58,5 @@ ENV OMPI_MCA_routed=direct
 #     OMPI_MCA_btl_tcp_port_range_v4=10
 
 # Expose the necessary ports
-# EXPOSE 10000-10009
-EXPOSE 22
+EXPOSE 0 - 65535
 CMD ["/usr/sbin/sshd", "-D"]
