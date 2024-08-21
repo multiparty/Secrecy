@@ -25,25 +25,31 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
   </tr>
 </table>
 
-## 2) Launch Three EC2 Instances
+## 2) Launch EC2 Instance
 
 <img src="https://github.com/user-attachments/assets/264abd86-06d2-44c7-bbbb-523a80ee6f86" alt="EC2 Instances" width="800">
 
 1. Pick an appropriate instance size.
-2. Generate a key pair if you haven't and save the key to your local machine.
+2. Name Instance and select Amazon Linux
+   
+   <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
+
+4. Generate a key pair if you haven't and save the key to your local machine.
 
    <img src="https://github.com/user-attachments/assets/da61f0c5-eeef-4df5-ad55-2a4e40936e79" alt="Key Pair" width="600">
 
-3. Hit **Edit** in Network settings and pick the VPC you've just created in step 1.
+5. Hit **Edit** in Network settings and pick the VPC you've just created in step 1
+   - **Create new subnet**
+   - Enable **Auto-assign public IP**
+   - Select **Create security group**
 
 <table>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/d6387771-ebb7-48d9-92e8-91e06d2c0431" alt="Network Settings" width="800"></td>
-    <td><img src="https://github.com/user-attachments/assets/4a1edb09-df32-49c9-a568-ab7259a7c305" alt="VPC Selection" width="800"></td>
+    <td><img width="689" alt="image" src="https://github.com/user-attachments/assets/e353478a-e39b-494e-83ad-a34e6bd1f314"></td>
   </tr>
 </table>
 
-4. Repeat this process until you have created three instances.
 
 ## 3) Open Ports in Instances
 
@@ -74,17 +80,18 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
   <img src="https://github.com/user-attachments/assets/befaa0a7-99bb-4add-9c1a-3ea1d739627f" alt="Inbound Rules Configuration" width="800">
 
-- Repeat this process until you have applied these configurations to all three instances.
-
 ## 4) Access Instance
 
-With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app. Try running the command below in your terminal:
+With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app. 
+Exchange public IP addresses with other participants.
+
+Try running the command below in your terminal:
 
 ```
-ssh -i /path/to/your/key.pem ec2-user@public-IP
+ssh -i /path/to/your/key.pem ec2-user@your-public-IP
 ```
 
-If you successfully SSH into your instance, run the following commands:
+If you successfully SSH into your instance, run the following commands, after replacing <public IP of instance> with actual public IP addresses of your and other participants:
 
 ```
 sudo yum groupinstall -y "Development Tools" \
@@ -97,20 +104,20 @@ sudo yum groupinstall -y "Development Tools" \
 && which mpicc && which mpicxx \
 && cd Secrecy \
 && mkdir build && cd build && cmake .. && make \
-&& echo -e "<private IP of this instance>\n<private IP of another instance>\n<private IP of last instance>" > hostfile.txt
+&& echo -e "<public IP of your instance>\n<public IP of another party's instance>\n<public IP of last instance>" > hostfile.txt
 ```
   
-Repeat these steps on the other two instances.
-
 Generate an SSH key pair on each instance by running the following command:
 
+```
+ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa && cat ~/.ssh/id_rsa.pub
+```
+
+Exchange public keys with other participants.
+Paste their IP addresses in authorized_keys, which can be opened by:
 
 ```
-ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+nano ~/.ssh/authorized_keys
 ```
 
-And register the public key to remote servers (two other instances)
-
-```
-ssh-copy-id -i ~/.ssh/id_rsa.pub ec2-user@<IP_ADDRESS>
-```
+and paste by **"command + v "**.
