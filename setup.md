@@ -1,6 +1,6 @@
 # Secrecy OpenMPI Setup Guide
 
-This document is a step-by-step guide to setting up Secrecy Server and OPEN MPI implementation on AWS EC2 instances.
+This document is a step-by-step guide to setting up a Secrecy Server and OPEN MPI implementation on AWS EC2 instances.
 
 ## Introduction
 
@@ -15,12 +15,13 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 1. Navigate to the AWS VPC console.
 2. Select **VPC and more**.
-3. Create a VPC with **1 zone** and both **public** and **private subnets**.
+3. Name your VPC
+4. Create a VPC with **1 zone** and **public** and zero **private subnets**.
 
 <table>
   <tr>
-    <td><img src="https://github.com/user-attachments/assets/238a521a-167c-462b-9d2d-ec5739014e7c" alt="VPC Setup" width="400"></td>
-    <td><img src="https://github.com/user-attachments/assets/2ccae596-158b-4198-b1c5-b23dc85997f2" alt="VPC Subnet Configuration" width="400"></td>
+    <td><img src="https://github.com/user-attachments/assets/7c2d3bf1-17bc-425c-ac65-0f1701ab5564" alt="VPC Setup" width="400"></td>
+    <td><img src="https://github.com/user-attachments/assets/e88406f0-382a-4cbb-b837-df9bafff6d60" alt="VPC Subnet Configuration" width="400"></td>
   </tr>
 </table>
 
