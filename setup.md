@@ -32,16 +32,17 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 <img src="https://github.com/user-attachments/assets/264abd86-06d2-44c7-bbbb-523a80ee6f86" alt="EC2 Instances" width="800">
 
-1. Pick an appropriate instance size.
-2. Name Instance and select Amazon Linux
+1. Name Instance and select Amazon Linux
    
    <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
 
-4. Generate a key pair if you haven't and save the key to your local machine.
+2. Pick an appropriate instance size.
+
+3. Generate a key pair if you haven't and save the key to your local machine.
 
    <img src="https://github.com/user-attachments/assets/da61f0c5-eeef-4df5-ad55-2a4e40936e79" alt="Key Pair" width="600">
 
-5. Hit **Edit** in Network settings and pick the VPC you've just created in step 1
+4. Hit **Edit** in Network settings and pick the VPC you've just created in step 1
    - **Create new subnet**
    - Enable **Auto-assign public IP**
    - Select **Create security group**
@@ -58,17 +59,13 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 1. Go to the EC2 instance dashboard.
 2. Click the line of your instance (e.g., Secrecy-node#).
-3. Save the Public and Private IP addresses.
+3. Save the Public IP address and exchange it with other participants.
 
    <img src="https://github.com/user-attachments/assets/c194e122-f442-4745-8989-2d4840c2d8d3" alt="EC2 Dashboard" width="800">
 
-4. Open the **Security** tab.
+4. Open the **Security** tab and Hit **Security Groups**, which opens a new browser tab.
 
    <img src="https://github.com/user-attachments/assets/4d6e9a60-c62a-4234-8f7a-ce8f07caeff7" alt="Security Tab" width="800">
-
-5. Hit **Security Groups**, which opens a new browser tab.
-
-   <img src="https://github.com/user-attachments/assets/4d3cdca1-076f-4d6d-9cab-9a1d6ae1e39c" alt="Security Groups" width="800">
 
 6. Click the value under **Security group ID**.
 
@@ -79,13 +76,14 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
   <img src="https://github.com/user-attachments/assets/b22c5546-0908-454a-8642-98f2e92fe523" alt="Edit Inbound Rules" width="800">
 
-- Add rules so that Port 22 is accessible from your local machine and all ports (0-65535) are accessible from the private IP addresses of the other two instances.
+- Add rules so that Port 22 is accessible from your local machine and all ports (0-65535) are accessible from the public IP addresses of the other two instances.
 
   <img src="https://github.com/user-attachments/assets/befaa0a7-99bb-4add-9c1a-3ea1d739627f" alt="Inbound Rules Configuration" width="800">
 
 ## 4) Access Instance
 
-With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app. 
+With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app.
+
 Exchange public IP addresses with other participants.
 
 Try running the command below in your terminal:
@@ -106,8 +104,7 @@ sudo yum groupinstall -y "Development Tools" \
 && export PATH=$PATH:/usr/lib64/openmpi/bin \
 && which mpicc && which mpicxx \
 && cd Secrecy \
-&& mkdir build && cd build && cmake .. && make \
-&& echo -e "<public IP of your instance>\n<public IP of another party's instance>\n<public IP of last instance>" > hostfile.txt
+&& mkdir build && cd build && cmake .. && make
 ```
   
 Generate an SSH key pair on each instance by running the following command:
@@ -124,3 +121,28 @@ nano ~/.ssh/authorized_keys
 ```
 
 and paste by **"command + v "**.
+
+## 5) Make a hostfile and run MPI program
+
+If you are initiating the MPI process, make a host file in the build directory by running the following command:
+
+```
+ echo -e "<public IP of your instance>\n<public IP of another party's instance>\n<public IP of last instance>" > hostfile.txt
+```
+
+or manually by:
+
+```
+nano hostfile.txt
+```
+
+The resulting hostfile should look like this:
+
+<img width="206" alt="image" src="https://github.com/user-attachments/assets/cc577fd0-24b0-4ab8-8620-9e894dd9a3a9">
+
+The initiating party should be able to run the Secrecy algorithm by running the following command:
+
+```
+mpirun -np 3 --hostfile hostfile.txt ./test_join_sail ./../sample1.json ./../sample2.json
+```
+
