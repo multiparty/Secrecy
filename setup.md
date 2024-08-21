@@ -13,7 +13,10 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 ## 1) Create VPC 
 
-1. Navigate to the AWS VPC console.
+1. Navigate to the AWS VPC console and hit **Create VPC**.
+
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/8398b2cb-77fe-4eb9-b263-207eab301219">
+
 2. Select **VPC and more**.
 3. Name your VPC
 4. Create a VPC with **1 zone** and **public** and zero **private subnets**.
