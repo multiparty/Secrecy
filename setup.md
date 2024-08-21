@@ -104,14 +104,12 @@ Repeat these steps on the other two instances.
 Generate an SSH key pair on each instance by running the following command:
 
 
-
 ```
 ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 ```
 
+And register the public key to remote servers (two other instances)
+
 ```
 ssh-copy-id -i ~/.ssh/id_rsa.pub ec2-user@<IP_ADDRESS>
 ```
-
-
-
