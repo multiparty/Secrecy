@@ -4,6 +4,8 @@
 #include <fstream>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <cstdlib>
+#include <string>
 #include "../test-utils.h"
 using json = nlohmann::json;
 
@@ -27,6 +29,18 @@ json import_JSON(const std::string& path) {
     }
     json_file.close();
     return js;
+}
+
+void download_from_s3(char filename){
+    std::string awsCommand = "aws s3 cp s3://secrecy-bucket/" + filename + " ../";
+    int result = system(awsCommand.c_str());
+
+    // Check if the command executed successfully
+    if (result == 0) {
+        std::cout << "File downloaded successfully!" << std::endl;
+    } else {
+        std::cerr << "Error downloading file. Command returned: " << result << std::endl;
+    }
 }
 
 int main(int argc, char** argv) {
@@ -54,6 +68,7 @@ int main(int argc, char** argv) {
     const int succ = get_succ();  // Checks initialization and returns an assigned rank/index of successor party
 
     if (rank == 0) {     // P1: Party-1
+        download_from_s3("sample1.json");
         init_sharing();  // Runs sodium_init and checks if itinialization of sodium was successful
         json js1 = import_JSON(argv[1]);
         ROWS1 = static_cast<int>(js1["r1"].size());
@@ -214,6 +229,7 @@ int main(int argc, char** argv) {
         json_file.close();
 #endif
     } else if (rank == 1) {  // P2
+        download_from_s3("sample2.json");
         init_sharing();      // Runs sodium_init and checks if itinialization of sodium was successful
         json js2 = import_JSON(argv[2]);
         ROWS2 = static_cast<int>(js2["r2"].size());
