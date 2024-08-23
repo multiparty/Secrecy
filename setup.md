@@ -63,7 +63,7 @@ In this guide, we call a party who initiates/runs the <i>mpirun</i> command **in
 2. Click the line of your instance (e.g., Secrecy-node#).
 3. Save the Public and Private IP addresses. Share these IP addresses with an initializing party.
 
-   <img src="https://github.com/user-attachments/assets/c194e122-f442-4745-8989-2d4840c2d8d3" alt="EC2 Dashboard" width="800">
+   <img width="800" alt="EC2 Dashboard" src="https://github.com/user-attachments/assets/b66988a4-993b-4464-9310-f4ba1b0a3234">
 
 <i>Steps 4 and 5 are required **ONLY IF** you are the first one to create an EC2 instance.</i>
 
