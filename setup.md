@@ -80,9 +80,12 @@ In this guide, we call a party who initiates/runs the <i>mpirun</i> command **in
 
   <img src="https://github.com/user-attachments/assets/b22c5546-0908-454a-8642-98f2e92fe523" alt="Edit Inbound Rules" width="800">
 
-- Add rules so that Port 22 is accessible from your local machine and all ports (0-65535) are accessible from the private IP addresses of the other two instances.
+- Add rules so that Port 22 is accessible from your local machine and all ports (0-65535) are accessible from **the private IP addresses** of the other two instances.
 
   <img src="https://github.com/user-attachments/assets/befaa0a7-99bb-4add-9c1a-3ea1d739627f" alt="Inbound Rules Configuration" width="800">
+
+* We add private IPs instead of public IPs because all communication between instances and services hosted in AWS uses AWS's private network, explained in <a href="https://aws.amazon.com/vpc/faqs/#:~:text=No.%20When%20using%20public%20IP%20addresses%2C%20all%20communication%20between%20instances%20and%20services%20hosted%20in%20AWS%20use%20AWS%27s%20private%20network.%20Packets%20that%20originate%20from%20the%20AWS%20network%20with%20a%20destination%20on%20the%20AWS%20network%20stay%20on%20the%20AWS%20global%20network%2C%20except%20traffic%20to%20or%20from%20AWS%20China%20Regions">AWS FAQ</a> (Does traffic go over the internet when two instances communicate using public IP addresses, or when instances communicate with a public AWS service endpoint?).
+
 
 ## 4) Access Instance and Network Configuration
 
