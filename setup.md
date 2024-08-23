@@ -8,7 +8,6 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 ### Prerequisites
 - AWS Account
-- Basic knowledge of EC2 and VPC
 - SSH client installed on your local machine
 
 ## 1) Create VPC 
