@@ -69,9 +69,9 @@ In this guide, we call a party who initiates/runs the <i>mpirun</i> command **in
 
 4. Open the **Security** tab and Hit **Security Groups**, which opens a new browser tab.
 
-   <img src="https://github.com/user-attachments/assets/4d6e9a60-c62a-4234-8f7a-ce8f07caeff7" alt="Security Tab" width="800">
+   <img width="800" alt="image" src="https://github.com/user-attachments/assets/2f13957e-8ada-49c8-9307-72929a5c9a67">
 
-5. Click the value under **Security group ID**.
+6. Click the value under **Security group ID**.
 
    <img src="https://github.com/user-attachments/assets/4d81375e-415f-409e-926c-548fb2f5c9ee" alt="Security Group ID" width="600">
 
