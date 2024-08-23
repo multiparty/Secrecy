@@ -10,6 +10,9 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 - AWS Account
 - SSH client installed on your local machine
 
+### Terminology
+In this guide, we call a party who initiates/runs the <i>mpirun</i> command **initializing party**.
+
 ## 1) Create VPC 
 
 1. Navigate to the AWS VPC console and hit **Create VPC**.
