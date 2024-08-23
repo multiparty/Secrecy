@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
                std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
- 
+
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
