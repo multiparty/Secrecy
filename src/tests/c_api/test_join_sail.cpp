@@ -228,6 +228,13 @@ int main(int argc, char** argv) {
         std::ofstream json_file("output.json");
         json_file << output_json.dump(4); // Pretty print with 4 spaces
         json_file.close();
+        std::string awsUploadCommand = "aws s3 cp output.json s3://secrecy-output/";
+        int result = system(awsUploadCommand.c_str());
+        if (result == 0) {
+            std::cout << "File uploaed successfully!" << std::endl;
+        } else {
+            std::cerr << "Error uploading file. Command returned: " << result << std::endl;
+        }
 #endif
     } else if (rank == 1) {  // P2
         download_from_s3(rank + 1, "sample2.json");
