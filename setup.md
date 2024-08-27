@@ -10,9 +10,6 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 - AWS Account
 - SSH client installed on your local machine
 
-### Terminology
-In this guide, we call a party who initiates/runs the <i>mpirun</i> command **initializing party**.
-
 ## 1) Create VPC 
 
 1. Navigate to the AWS VPC console and hit **Create VPC**.
@@ -158,8 +155,9 @@ chmod 600 ~/.ssh/config
 ```
 
 ## 5) Initiate MPI program
+Designate **initializing party**, and only the initializing party executes the following steps.
 
-If you're initiating the MPI process, you'll need to create a host file in the build directory. You can do this automatically by running the following command:
+You'll need to create a host file in the build directory to run the MPI process. You can do this automatically by running the following command:
 
 ```
  echo -e "<public IP of your instance>\n<public IP of another party's instance>\n<public IP of last instance>" > hostfile.txt
