@@ -3,36 +3,19 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <nlohmann/json.hpp>
 #include "../test-utils.h"
-using json = nlohmann::json;
-
+#include <jsoncons/json.hpp>
+#include <jsoncons_ext/csv/csv.hpp>
+using namespace jsoncons;
 #define DEBUG 0
 #define INIT_TAG 191
 #define SHARE_TAG 193
 #define RESULT_TAG 197
 
-json import_JSON(const std::string& path) {
-    json js;
-    std::ifstream json_file(path);  // Use the first command-line argument as the file path
-    if (!json_file.is_open()) {
-        std::cerr << "Unable to open file: " << path << std::endl;
-        return 1;
-    }
-    try {
-        json_file >> js;
-    } catch (json::parse_error& e) {
-        std::cerr << "Parse error: " << e.what() << std::endl;
-        return 1;
-    }
-    json_file.close();
-    return js;
-}
-
 int main(int argc, char** argv) {
     // Checking json file path
     if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <path_to_json_file for P1>"
+        std::cerr << "Usage: " << argv[0] << " <path_to_csv_file for P1>"
                   << " <path_to_json_file for P2>" << std::endl;
         return 1;
     }
@@ -52,12 +35,20 @@ int main(int argc, char** argv) {
     const int pred = get_pred();  // Checks initialization and returns an assigned rank/index of a
                                   // predecessor party
     const int succ = get_succ();  // Checks initialization and returns an assigned rank/index of successor party
-
+    
+    // Common csv option for party1 and 2
+    auto options = csv::csv_options{}.assume_header(false).mapping_kind(csv::csv_mapping_kind::n_rows);
     if (rank == 0) {     // P1: Party-1
+        std::string filename = argv[1];
+        if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
+            std::cerr << "Error: The file '" << filename << "' is not a CSV file. Please provide a .csv file." << std::endl;
+            return 1;
+        }
         init_sharing();  // Runs sodium_init and checks if itinialization of sodium was successful
-        json js1 = import_JSON(argv[1]);
-        ROWS1 = static_cast<int>(js1["r1"].size());
-        COLS1 = static_cast<int>(js1["r1"][0].size());
+        std::ifstream is1(argv[1]);
+        ojson js1 = csv::decode_csv<ojson>(is1,options);
+        ROWS1 = static_cast<int>(js1.size());
+        COLS1 = static_cast<int>(js1[0].size());
         //////// Send ROWS1 and COLS1 to P2 and 3
         MPI_Send(&ROWS1, 1, MPI_INT, 1, INIT_TAG, MPI_COMM_WORLD);
         MPI_Send(&COLS1, 1, MPI_INT, 1, INIT_TAG, MPI_COMM_WORLD);
@@ -73,8 +64,8 @@ int main(int argc, char** argv) {
         Data r1[ROWS1][COLS1];
 
         for (int i = 0; i < ROWS1; ++i) {
-            r1[i][0] = js1["r1"][i][0].get<int>();
-            r1[i][1] = js1["r1"][i][1].get<int>();
+            r1[i][0] = js1[i][0].as<int>();
+            r1[i][1] = js1[i][1].as<int>();
         }
 
         // generate r1 shares
@@ -175,22 +166,22 @@ int main(int argc, char** argv) {
         MPI_Send(t2_index.data(), size_to_receive, MPI_INT, 1, RESULT_TAG, MPI_COMM_WORLD);
 
         // JSON object to hold the results
-        nlohmann::json output_json = nlohmann::json::array();
+        jsoncons::json output_json = jsoncons::json::array();
 
         std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
-            nlohmann::json entry;
+            jsoncons::json entry = jsoncons::json::object();
             
             // Index/Key Val
             int t1 = t1_index[i];
-            long long index_val = js1["r1"][t1][0];
+            long long index_val = js1[t1][0].as<int>();
             entry["index_val"] = index_val;
             std::cout << "[" << index_val;
 
             // Own Table
             std::vector<int> send_vals(COLS1-1);
             for(int j = 1; j < COLS1; j++){
-                int curr_val = js1["r1"][t1][j];
+                int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
                 entry["own_val" + std::to_string(j)] = curr_val;
                 std::cout << ", " << curr_val;
@@ -210,14 +201,20 @@ int main(int argc, char** argv) {
             output_json.push_back(entry);
         }
         std::ofstream json_file("output.json");
-        json_file << output_json.dump(4); // Pretty print with 4 spaces
+        json_file << pretty_print(output_json); // Pretty print with 4 spaces
         json_file.close();
 #endif
     } else if (rank == 1) {  // P2
+        std::string filename = argv[2];
+        if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
+            std::cerr << "Error: The file '" << filename << "' is not a CSV file. Please provide a .csv file." << std::endl;
+            return 1;
+        }
         init_sharing();      // Runs sodium_init and checks if itinialization of sodium was successful
-        json js2 = import_JSON(argv[2]);
-        ROWS2 = static_cast<int>(js2["r2"].size());
-        COLS2 = static_cast<int>(js2["r2"][0].size());
+        std::ifstream is2(argv[2]);
+        ojson js2 = csv::decode_csv<ojson>(is2,options);
+        ROWS2 = static_cast<int>(js2.size());
+        COLS2 = static_cast<int>(js2[0].size());
 
         //////// Receive ROWS1 and COLS1 from P1
         MPI_Recv(&ROWS1, 1, MPI_INT, 0, INIT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -233,8 +230,8 @@ int main(int argc, char** argv) {
         Data r2[ROWS2][COLS2];
 
         for (int i = 0; i < ROWS2; ++i) {
-            r2[i][0] = js2["r2"][i][0].get<int>();
-            r2[i][1] = js2["r2"][i][1].get<int>();
+            r2[i][0] = js2[i][0].as<int>();
+            r2[i][1] = js2[i][1].as<int>();
         }
 
         // generate r2 shares
@@ -332,7 +329,7 @@ int main(int argc, char** argv) {
             // send back to p1
             std::vector<int> send_vals(COLS2-1);
             for(int j = 1; j < COLS2; j++){
-                send_vals[j-1] = js2["r2"][t2][j];
+                send_vals[j-1] = js2[t2][j].as<int>();
             }
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
         }
