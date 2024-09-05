@@ -9,6 +9,7 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 ### Prerequisites
 - AWS Account
 - SSH client installed on your local machine
+- Decide on roles 1, 2, and 3 amongst three participating parties
 
 ## 1) Create VPC 
 
@@ -18,7 +19,8 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 2. Select **VPC and more**.
 3. Name your VPC
-4. Create a VPC with **1 zone** and **public** and zero **private subnets**.
+4. Pick the IPv4 CIDR block: 10.0.0.0/16 for role-1, 10.1.0.0/16 for role-2, 10.2.0.0/16 for role-3.
+5. Create a VPC with **1 zone** and **public** and zero **private subnets**.
 
 <table>
   <tr>
@@ -53,38 +55,61 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
   </tr>
 </table>
 
+## 3) Setup Subnets
+1. Go to the VPC Dashboard
+2. In the left-hand navigation pane, select **"Subnets"**.
+3. Click **"Create subnet"**
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/a9dc2141-7f0f-4e34-8cbb-ef9db2714ae4">
+4. Select your VPC from the drop-down. Then the following settings pane pops up.
+  - Name subnet
+  - Set Availability Zone 'us-east-1a'
+  - IPv4 VPC CIDR block should be your VPC CIDR block
+  - IPv4 subnet CIDR block should be set according to: 10.0.16.0/20 if role-1, 10.1.16.0/20 if role-2, and 10.2.16.0/20 if role-3.
+  - Hit **"Create subnet"** 
 
-## 3) Open Ports in Instances
+## 4) Create VPC Peering Connection
 
-1. Go to the EC2 instance dashboard.
-2. Click the line of your instance (e.g., Secrecy-node#).
-3. Save the Public and Private IP addresses. Share these IP addresses with an initializing party.
+1. Go to the VPC Dashboard
+2. In the left-hand navigation pane, select **"Peering Connections"**.
+3. Click **"Create Peering Connection"**
+   <img width="800" alt="image" src="https://github.com/user-attachments/assets/4af09183-c24f-4789-8902-67d276199cbd">
+4. Fill in parameters, 
+  - Name: Give the Peering Connection a name
+  - Local VPC: Select your VPC
+  - Another VPC: Select 2 if you are role-1. Select 3 if you are role-2. Select 1 if you are role-3.
+If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
+5. Click **"Create Peering Connection"**
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/befcb6a1-6a54-4bc4-8cef-a02e5e8e0176">
+6. Go back to the **"Peering Connections"** Dashboard.
+7. Select your Peer Connection, click **"Actions"** at the right top, and hit **Accept request**
 
-   <img width="800" alt="EC2 Dashboard" src="https://github.com/user-attachments/assets/b66988a4-993b-4464-9310-f4ba1b0a3234">
+## 5) Update Route Tables
 
-<i>Steps 4 and 5 are required **ONLY IF** you are the first one to create an EC2 instance.</i>
+1. Go to the **Route Tables** section in the VPC Dashboard.
+2. Select the Route Table associated with the subnets in each VPC from the list.
+3. Click **Edit routes** in the Routes tab:
+   <img width="800" alt="image" src="https://github.com/user-attachments/assets/68ab564c-138c-43b8-89ad-d87a1a257577">
+4. Click **"Add route"** to add a new route:
+   - **Destination**: The CIDR block of the peered VPC
+   - The CIDR block for each roles are: `10.0.0.0/16` for role-1, `10.1.0.0/16` for role-2, and`10.2.0.0/16` for role-3
+   - Therefore, if you are role-1, you would want to add two routes for each role-2 and role-3, 10.1.0.0/16 and 10.2.0.0/16 respectively as Destination
+   - **Target**: Select the Peering Connection and select corresponding subnets (e.g., `pcx-xxxxxx`) 
+     <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
+5. Click **Save routes**.
 
-4. Open the **Security** tab and Hit **Security Groups**, which opens a new browser tab.
+## 6) Update Security Groups and Network ACLs
+1. Go to the EC2 Dashboard.
+2. Select your instance, choose the **Security** tab, and hit the pop-up link.
+   <img width="800" alt="image" src="https://github.com/user-attachments/assets/48931b07-9a17-4a8f-bfbb-81e7ff2f96f7">
+3. This will take you to Security Groups Dashboard. Click on the Security Group ID
+   <img width="800" alt="image" src="https://github.com/user-attachments/assets/35dba1ee-1cd4-4fb9-a05b-f1ced5a78436">
+4. Click **"Edit inbound rules"**
+6. Add an inbound rule to allow traffic from the peered VPC’s CIDR block:
+   - **Type**: Select the desired traffic type (e.g., All traffic or specific ports).
+   - **Source**: Enter the CIDR block of the peered VPC (e.g., `10.0.0.0/16` for role-1, `10.1.0.0/16` for role-2, and`10.2.0.0/16` for role-3)
+   - If you are role-1, you would want to add two routes for each role-2 and role-3, 10.1.0.0/16 and 10.2.0.0/16 respectively
 
-   <img width="800" alt="image" src="https://github.com/user-attachments/assets/2f13957e-8ada-49c8-9307-72929a5c9a67">
-
-6. Click the value under **Security group ID**.
-
-   <img src="https://github.com/user-attachments/assets/4d81375e-415f-409e-926c-548fb2f5c9ee" alt="Security Group ID" width="600">
-
-
-- Under the **inbound rules**, open the **Edit inbound rules** button.
-
-  <img src="https://github.com/user-attachments/assets/b22c5546-0908-454a-8642-98f2e92fe523" alt="Edit Inbound Rules" width="800">
-
-- Add rules so that Port 22 is accessible from your local machine and all ports (0-65535) are accessible from **the private IP addresses** of the other two instances.
-
-  <img src="https://github.com/user-attachments/assets/befaa0a7-99bb-4add-9c1a-3ea1d739627f" alt="Inbound Rules Configuration" width="800">
-
-* We add private IPs instead of public IPs because all communication between instances and services hosted in AWS uses AWS's private network, explained in <a href="https://aws.amazon.com/vpc/faqs/#:~:text=No.%20When%20using%20public%20IP%20addresses%2C%20all%20communication%20between%20instances%20and%20services%20hosted%20in%20AWS%20use%20AWS%27s%20private%20network.%20Packets%20that%20originate%20from%20the%20AWS%20network%20with%20a%20destination%20on%20the%20AWS%20network%20stay%20on%20the%20AWS%20global%20network%2C%20except%20traffic%20to%20or%20from%20AWS%20China%20Regions">AWS FAQ</a> (Does traffic go over the internet when two instances communicate using public IP addresses, or when instances communicate with a public AWS service endpoint?).
-
-
-## 4) Access Instance and Network Configuration
+## 7) Access Instance and Network Configuration
 
 With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app.
 
