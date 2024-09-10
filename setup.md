@@ -9,7 +9,10 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 ### Prerequisites
 - AWS Account
 - SSH client installed on your local machine
-- Decide on roles 1, 2, and 3 amongst three participating parties
+
+
+## Before You Start
+**Designate each party to roles 1, 2, and 3**
 
 ## 1) Create VPC 
 
@@ -19,8 +22,11 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 2. Select **VPC and more**.
 3. Name your VPC
-4. Pick the IPv4 CIDR block: 10.0.0.0/16 for role-1, 10.1.0.0/16 for role-2, 10.2.0.0/16 for role-3.
-5. Create a VPC with **1 zone** and **public** and zero **private subnets**.
+4. Pick the IPv4 CIDR block:
+   - role-1: 10.0.0.0/16
+   - role-2: 10.1.0.0/16
+   - role-3: 10.2.0.0/16
+6. Create a VPC with **1 zone** and **public** and zero **private subnets**.
 
 <table>
   <tr>
@@ -43,10 +49,7 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
    <img src="https://github.com/user-attachments/assets/da61f0c5-eeef-4df5-ad55-2a4e40936e79" alt="Key Pair" width="600">
 
-4. Hit **Edit** in Network settings and pick the VPC you've just created in step 1
-   - Enable **Auto-assign public IP**
-   - Select **Create security group** if the other two parties haven't created one
-   - Alternatively **Select existing security group** if one of the other two parties have created one
+4. Hit **Edit** in Network settings, pick the VPC you've just created in step 1, enable **Auto-assign public IP**
 
 <table>
   <tr>
@@ -60,26 +63,35 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 2. In the left-hand navigation pane, select **"Subnets"**.
 3. Click **"Create subnet"**
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/a9dc2141-7f0f-4e34-8cbb-ef9db2714ae4">
+
 4. Select your VPC from the drop-down. Then the following settings pane pops up.
   - Name subnet
   - Set Availability Zone 'us-east-1a'
   - IPv4 VPC CIDR block should be your VPC CIDR block
-  - IPv4 subnet CIDR block should be set according to: 10.0.16.0/20 if role-1, 10.1.16.0/20 if role-2, and 10.2.16.0/20 if role-3.
+  - IPv4 subnet CIDR block should be set according to your role:
+    - role-1: 10.0.16.0/20
+    - role-2: 10.1.16.0/20
+    - role-3: 10.2.16.0/20
   - Hit **"Create subnet"** 
 
 ## 4) Create VPC Peering Connection
 
 1. Go to the VPC Dashboard
 2. In the left-hand navigation pane, select **"Peering Connections"**.
-3. Click **"Create Peering Connection"**
+3. Click **"Create Peering Connection"**. Make sure that other parties have already created VPCs at this point
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/4af09183-c24f-4789-8902-67d276199cbd">
 4. Fill in parameters, 
   - Name: Give the Peering Connection a name
-  - Local VPC: Select your VPC
-  - Another VPC: Select 2 if you are role-1. Select 3 if you are role-2. Select 1 if you are role-3.
-If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
+  - VPC ID(Requester): Select your VPC
+  - VPC ID(Accepter):
+      - If you are role-1: Select 2
+      - role-2: Select 3
+      - role-3: Select 1
+  - If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
+
 5. Click **"Create Peering Connection"**
-<img width="500" alt="image" src="https://github.com/user-attachments/assets/befcb6a1-6a54-4bc4-8cef-a02e5e8e0176">
+  <img width="500" alt="image" src="https://github.com/user-attachments/assets/befcb6a1-6a54-4bc4-8cef-a02e5e8e0176">
+
 6. Go back to the **"Peering Connections"** Dashboard.
 7. Select your Peer Connection, click **"Actions"** at the right top, and hit **Accept request**
 
@@ -91,11 +103,24 @@ If your partners/other parties use a separate AWS account, select "another accou
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/68ab564c-138c-43b8-89ad-d87a1a257577">
 4. Click **"Add route"** to add a new route:
    - **Destination**: The CIDR block of the peered VPC
-   - The CIDR block for each roles are: `10.0.0.0/16` for role-1, `10.1.0.0/16` for role-2, and`10.2.0.0/16` for role-3
-   - Therefore, if you are role-1, you would want to add two routes for each role-2 and role-3, 10.1.0.0/16 and 10.2.0.0/16 respectively as Destination
+   - The CIDR block for each role is:
+     -  role-1: `10.0.0.0/16`
+     -  role-2: `10.1.0.0/16`
+     -  role-3: `10.2.0.0/16`
+    Therefore:
+     - If you are role-1, you would want to add two routes for each role-2 and role-3:
+       - 10.1.0.0/16
+       - 10.2.0.0/16
+     - If you are role-2:
+       - 10.0.0.0/16
+       - 10.2.0.0/16
+     - If you are role-3:
+       - 10.0.0.0/16
+       - 10.1.0.0/16
+
    - **Target**: Select the Peering Connection and select corresponding subnets (e.g., `pcx-xxxxxx`) 
      <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
-5. Click **Save routes**.
+6. Click **Save routes**.
 
 ## 6) Update Security Groups and Network ACLs
 1. Go to the EC2 Dashboard.
@@ -107,7 +132,12 @@ If your partners/other parties use a separate AWS account, select "another accou
 6. Add an inbound rule to allow traffic from the peered VPC’s CIDR block:
    - **Type**: Select the desired traffic type (e.g., All traffic or specific ports).
    - **Source**: Enter the CIDR block of the peered VPC (e.g., `10.0.0.0/16` for role-1, `10.1.0.0/16` for role-2, and`10.2.0.0/16` for role-3)
-   - If you are role-1, you would want to add two routes for each role-2 and role-3, 10.1.0.0/16 and 10.2.0.0/16 respectively
+     - If you are role-1, you would want to add two routes for each role-2 and role-3:
+       -  10.1.0.0/16 and 10.2.0.0/16
+     - If you are role-2:
+       -  10.0.0.0/16 and 10.2.0.0/16
+     - If you are role-3:
+       -  10.0.0.0/16 and 10.1.0.0/16
 
 ## 7) Access Instance and Network Configuration
 
@@ -202,6 +232,6 @@ The resulting hostfile should resemble the following format (The order matters):
 Once the host file is prepared, the initiating party can run the Secrecy algorithm with the command:
 
 ```
-mpirun -np 3 --hostfile hostfile.txt ./test_join_sail ./../sample1.json ./../sample2.json
+mpirun -np 3 --hostfile hostfile.txt ./test_join_sail ./../sample1.csv ./../sample2.csv
 ```
 
