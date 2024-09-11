@@ -75,6 +75,11 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
   - Hit **"Create subnet"** 
 
 ## 4) Create VPC Peering Connection
+**You are making only one connection**
+Some people might get confused and try to create two connections because your instance communicates with two other instances. 
+However, you only need to create **ONE** connection, as one of your two peers will also establish a connection with you.
+
+The resulting connections will form a triangle, connecting all participants.
 
 1. Go to the VPC Dashboard
 2. In the left-hand navigation pane, select **"Peering Connections"**.
@@ -141,13 +146,15 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app.
 
-1. Try running the command below in your terminal:
+1. Exchange Private IP Address with other participants
+
+2. Try running the command below in your terminal:
 
 ```
 ssh -i /path/to/your/key.pem ec2-user@your-public-IP
 ```
 
-2. If you successfully SSH into your instance, run the following commands:
+3. If you successfully SSH into your instance, run the following commands:
 
 ```
 sudo yum groupinstall -y "Development Tools" \
@@ -159,10 +166,10 @@ sudo yum groupinstall -y "Development Tools" \
 && export PATH=$PATH:/usr/lib64/openmpi/bin \
 && which mpicc && which mpicxx \
 && cd Secrecy \
-&& mkdir build && cd build && cmake .. && make
+&& mkdir build && cd build && cmake .. && make -j
 ```
   
-3. Generate an SSH key pair on each instance by running the following command:
+4. Generate an SSH key pair on each instance by running the following command:
 
 ```
 ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
@@ -174,7 +181,7 @@ and below command will show your pubic key just generated:
 cat ~/.ssh/id_rsa.pub
 ```
 
-4. Exchange public keys with other participants. To grant them access, add their public keys to your authorized_keys file.
+5. Exchange public keys with other participants. To grant them access, add their public keys to your authorized_keys file.
 
 ```
 nano ~/.ssh/authorized_keys
@@ -182,7 +189,7 @@ nano ~/.ssh/authorized_keys
 
 Then, paste their public keys by pressing Command + V (on macOS) or the appropriate paste command for your operating system.
 
-5. In order to enable agent forwarding and disable strict host key checking for all SSH connections, you can add the following configuration to your SSH config file by editing it with:
+6. In order to enable agent forwarding and disable strict host key checking for all SSH connections, you can add the following configuration to your SSH config file by editing it with:
 
 ```
 nano ~/.ssh/config
@@ -208,7 +215,7 @@ chmod 600 ~/.ssh/config
 ```
 
 ## 8) Initiate MPI program
-Designate **initializing party**, and only the initializing party executes the following steps.
+Designate one of two parties with a dataset as an initializing party, and only the initializing party executes the following steps.
 
 You'll need to create a host file in the build directory to run the MPI process. You can do this automatically by running the following command:
 
