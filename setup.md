@@ -43,11 +43,14 @@ This step is particularly important to avoid confusion. You will see why in a se
 
 <img src="https://github.com/user-attachments/assets/264abd86-06d2-44c7-bbbb-523a80ee6f86" alt="EC2 Instances" width="800">
 
-1. Name Instance and select Amazon Linux
+1. Name Instance and select Amazon Linux:
+   - role-1: secrecy1
+   - role-2: secrecy2
+   - role-3: secrecy3
    
    <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
 
-2. Pick an appropriate instance size.
+2. Pick t2.micro as an instance size.
 
 3. Generate a key pair if you haven't and save the key to your local machine.
 
