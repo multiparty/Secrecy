@@ -43,20 +43,27 @@ This step is particularly important to avoid confusion. You will see why in a se
 
 <img src="https://github.com/user-attachments/assets/264abd86-06d2-44c7-bbbb-523a80ee6f86" alt="EC2 Instances" width="800">
 
-1. Name Instance and select Amazon Linux:
+1. Name Instance as follows:
    - role-1: secrecy1
    - role-2: secrecy2
    - role-3: secrecy3
    
    <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
 
-2. Pick t2.micro as an instance size.
+2. Select Amazon Linux
 
-3. Generate a key pair if you haven't and save the key to your local machine.
+3. Pick t2.micro as an instance size.
+
+4. Generate a key pair if you haven't and save the key to your local machine.
 
    <img src="https://github.com/user-attachments/assets/da61f0c5-eeef-4df5-ad55-2a4e40936e79" alt="Key Pair" width="600">
 
-4. Hit **Edit** in Network settings, pick the VPC you've just created in step 1, enable **Auto-assign public IP**
+5. Hit **Edit** in Network settings, pick the VPC you've just created in step 1:
+   - role-1: secrecy1
+   - role-2: secrecy2
+   - role-3: secrecy3
+
+7. Enable **Auto-assign public IP**
 
 <table>
   <tr>
