@@ -47,6 +47,7 @@ This step is particularly important to avoid confusion. You will see why in a se
    - role-1: secrecy1
    - role-2: secrecy2
    - role-3: secrecy3
+
    
    <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
 
@@ -80,9 +81,9 @@ This step is particularly important to avoid confusion. You will see why in a se
 
 4. Select your VPC from the drop-down. Then the following settings pane pops up.
   - Name subnet as follows:
-   - role-1: SubScy1
-   - role-2: SubScy2
-   - role-3: SubScy3
+      - role-1: SubScy1
+      - role-2: SubScy2
+      - role-3: SubScy3
   - Set Availability Zone 'us-east-1a'
   - IPv4 VPC CIDR block should be your VPC CIDR block
   - IPv4 subnet CIDR block should be set according to your role:
@@ -107,7 +108,10 @@ The resulting connections will form a triangle, connecting all participants.
       - role-1: secrecy12
       - role-2: secrecy23
       - role-3: secrecy31
-  - VPC ID(Requester): Select your VPC
+  - VPC ID(Requester): Select your VPC:
+      - role-1: secrecy1
+      - role-2: secrecy2
+      - role-3: secrecy3
   - VPC ID(Accepter): Select in the following way:
       - role-1: secrecy2
       - role-2: secrecy3
@@ -133,20 +137,36 @@ The resulting connections will form a triangle, connecting all participants.
 3. Click **Edit routes** in the Routes tab:
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/68ab564c-138c-43b8-89ad-d87a1a257577">
 4. Click **"Add route"** to add a new route:
-   - **Destination**: The CIDR block of the peered VPC
-   - Add the CIDR blocks in the following way:
-     - role-1:
-       - 10.1.0.0/16
-       - 10.2.0.0/16
-     - role-2:
-       - 10.0.0.0/16
-       - 10.2.0.0/16
-     - role-3:
-       - 10.0.0.0/16
-       - 10.1.0.0/16
 
-   - **Target**: Select the Peering Connection and select corresponding subnets (e.g., `pcx-xxxxxx`) 
-     <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
+   <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>role</th>
+      <th>destination</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>role-1</td>
+      <td>10.1.0.0/16, 10.2.0.0/16</td>
+      <td>secrecy12, secrecy31</td>
+    </tr>
+    <tr>
+      <td>role-2</td>
+      <td>10.0.0.0/16, 10.2.0.0/16</td>
+      <td>secrecy12, secrecy23</td>
+    </tr>
+    <tr>
+      <td>role-3</td>
+      <td>10.0.0.0/16, 10.1.0.0/16</td>
+      <td>secrecy31, secrecy23</td>
+    </tr>
+  </tbody>
+</table>
+
+   <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
+
 6. Click **Save routes**.
 
 ## 6) Update Security Groups and Network ACLs
