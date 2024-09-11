@@ -213,7 +213,7 @@ sudo yum groupinstall -y "Development Tools" \
 && export PATH=$PATH:/usr/lib64/openmpi/bin \
 && which mpicc && which mpicxx \
 && cd Secrecy \
-&& mkdir build && cd build && cmake .. && make -j
+&& mkdir build && cd build && cmake .. && make
 ```
   
 4. Generate an SSH key pair on each instance by running the following command:
