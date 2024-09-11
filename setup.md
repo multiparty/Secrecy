@@ -83,8 +83,8 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 4. Fill in parameters, 
   - Name: Give the Peering Connection a name
   - VPC ID(Requester): Select your VPC
-  - VPC ID(Accepter):
-      - If you are role-1: Select 2
+  - VPC ID(Accepter): Select in the following way:
+      - role-1: Select 2
       - role-2: Select 3
       - role-3: Select 1
   - If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
@@ -97,18 +97,16 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 ## 5) Update Route Tables
 
+** Ensure that everyone has created a peering connection before implementing this step
+
 1. Go to the **Route Tables** section in the VPC Dashboard.
 2. Select the Route Table associated with the subnets in each VPC from the list.
 3. Click **Edit routes** in the Routes tab:
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/68ab564c-138c-43b8-89ad-d87a1a257577">
 4. Click **"Add route"** to add a new route:
    - **Destination**: The CIDR block of the peered VPC
-   - The CIDR block for each role is:
-     -  role-1: `10.0.0.0/16`
-     -  role-2: `10.1.0.0/16`
-     -  role-3: `10.2.0.0/16`
-    Therefore:
-     - If you are role-1, you would want to add two routes for each role-2 and role-3:
+   - Add the CIDR blocks in the following way:
+     - If you are role-1:
        - 10.1.0.0/16
        - 10.2.0.0/16
      - If you are role-2:
@@ -209,7 +207,7 @@ chmod 600 ~/.ssh/id_rsa
 chmod 600 ~/.ssh/config
 ```
 
-## 5) Initiate MPI program
+## 8) Initiate MPI program
 Designate **initializing party**, and only the initializing party executes the following steps.
 
 You'll need to create a host file in the build directory to run the MPI process. You can do this automatically by running the following command:
