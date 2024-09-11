@@ -4,7 +4,7 @@ This document is a step-by-step guide to setting up a Secrecy Server and OPEN MP
 
 ## Introduction
 
-In this guide, you will learn how to create a Virtual Private Cloud (VPC), launch and configure EC2 instances, and set up Secrecy with OpenMPI. This guide assumes you have a basic understanding of AWS services and SSH.
+This guide navigates you through how to set up an AWS environment and get the MPC vehicle up and running.
 
 ### Prerequisites
 - AWS Account
@@ -13,6 +13,7 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 
 ## Before You Start
 **Designate each party to roles 1, 2, and 3**
+This step is particularly important to avoid confusion. You will see why in a second.
 
 ## 1) Create VPC 
 
@@ -21,12 +22,15 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/8398b2cb-77fe-4eb9-b263-207eab301219">
 
 2. Select **VPC and more**.
-3. Name your VPC
-4. Pick the IPv4 CIDR block:
+3. Name your VPC in the following manner:
+   - role-1: secrecy1
+   - role-2: secrecy2
+   - role-3: secrecy3
+4. Pick the respective IPv4 CIDR block as follows:
    - role-1: 10.0.0.0/16
    - role-2: 10.1.0.0/16
    - role-3: 10.2.0.0/16
-6. Create a VPC with **1 zone** and **public** and zero **private subnets**.
+5. Create a VPC with **1 zone** and **public** and zero **private subnets**.
 
 <table>
   <tr>
@@ -65,7 +69,10 @@ In this guide, you will learn how to create a Virtual Private Cloud (VPC), launc
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/a9dc2141-7f0f-4e34-8cbb-ef9db2714ae4">
 
 4. Select your VPC from the drop-down. Then the following settings pane pops up.
-  - Name subnet
+  - Name subnet as follows:
+   - role-1: SubScy1
+   - role-2: SubScy2
+   - role-3: SubScy3
   - Set Availability Zone 'us-east-1a'
   - IPv4 VPC CIDR block should be your VPC CIDR block
   - IPv4 subnet CIDR block should be set according to your role:
@@ -86,19 +93,26 @@ The resulting connections will form a triangle, connecting all participants.
 3. Click **"Create Peering Connection"**. Make sure that other parties have already created VPCs at this point
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/4af09183-c24f-4789-8902-67d276199cbd">
 4. Fill in parameters, 
-  - Name: Give the Peering Connection a name
+  - Name: Give the Peering Connection a name as below:
+      - role-1: secrecy12
+      - role-2: secrecy23
+      - role-3: secrecy31
   - VPC ID(Requester): Select your VPC
   - VPC ID(Accepter): Select in the following way:
-      - role-1: Select 2
-      - role-2: Select 3
-      - role-3: Select 1
+      - role-1: secrecy2
+      - role-2: secrecy3
+      - role-3: secrecy1
   - If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
 
 5. Click **"Create Peering Connection"**
   <img width="500" alt="image" src="https://github.com/user-attachments/assets/befcb6a1-6a54-4bc4-8cef-a02e5e8e0176">
 
 6. Go back to the **"Peering Connections"** Dashboard.
-7. Select your Peer Connection, click **"Actions"** at the right top, and hit **Accept request**
+7. Select with a radio button your incoming Peer Connection request
+      - role-1: secrecy31
+      - role-2: secrecy12
+      - role-3: secrecy23
+8. Click **"Actions"** at the right top, and hit **Accept request**
 
 ## 5) Update Route Tables
 
@@ -111,13 +125,13 @@ The resulting connections will form a triangle, connecting all participants.
 4. Click **"Add route"** to add a new route:
    - **Destination**: The CIDR block of the peered VPC
    - Add the CIDR blocks in the following way:
-     - If you are role-1:
+     - role-1:
        - 10.1.0.0/16
        - 10.2.0.0/16
-     - If you are role-2:
+     - role-2:
        - 10.0.0.0/16
        - 10.2.0.0/16
-     - If you are role-3:
+     - role-3:
        - 10.0.0.0/16
        - 10.1.0.0/16
 
@@ -132,15 +146,18 @@ The resulting connections will form a triangle, connecting all participants.
 3. This will take you to Security Groups Dashboard. Click on the Security Group ID
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/35dba1ee-1cd4-4fb9-a05b-f1ced5a78436">
 4. Click **"Edit inbound rules"**
-6. Add an inbound rule to allow traffic from the peered VPC’s CIDR block:
-   - **Type**: Select the desired traffic type (e.g., All traffic or specific ports).
-   - **Source**: Enter the CIDR block of the peered VPC (e.g., `10.0.0.0/16` for role-1, `10.1.0.0/16` for role-2, and`10.2.0.0/16` for role-3)
-     - If you are role-1, you would want to add two routes for each role-2 and role-3:
-       -  10.1.0.0/16 and 10.2.0.0/16
-     - If you are role-2:
-       -  10.0.0.0/16 and 10.2.0.0/16
-     - If you are role-3:
-       -  10.0.0.0/16 and 10.1.0.0/16
+6. Add two inbound rules to allow traffic from the peered VPC’s CIDR blocks:
+   - **Type**: Select `All TCP`
+   - **Source**: Enter the CIDR block of the peered VPC
+     - role-1:
+       -  10.1.0.0/16
+       -  10.2.0.0/16
+     - role-2:
+       -  10.0.0.0/16
+       -  10.2.0.0/16
+     - role-3:
+       -  10.0.0.0/16
+       -  10.1.0.0/16
 
 ## 7) Access Instance and Network Configuration
 
