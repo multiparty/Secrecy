@@ -76,7 +76,8 @@ int main(int argc, char** argv) {
         }
         download_from_s3(rank + 1, filename);
         init_sharing();  // Runs sodium_init and checks if itinialization of sodium was successful
-        std::ifstream is1(argv[1]);
+        std::string csv_file = "./../" + filename
+        std::ifstream is1(csv_file);
         ojson js1 = csv::decode_csv<ojson>(is1,options);
         ROWS1 = static_cast<int>(js1.size());
         COLS1 = static_cast<int>(js1[0].size());
@@ -250,7 +251,8 @@ int main(int argc, char** argv) {
         }
         download_from_s3(rank + 1, filename);
         init_sharing();      // Runs sodium_init and checks if itinialization of sodium was successful
-        std::ifstream is2(argv[2]);
+        std::string csv_file = "./../" + filename
+        std::ifstream is2(csv_file);
         ojson js2 = csv::decode_csv<ojson>(is2,options);
         ROWS2 = static_cast<int>(js2.size());
         COLS2 = static_cast<int>(js2[0].size());
