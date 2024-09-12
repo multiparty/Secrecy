@@ -110,6 +110,13 @@ The resulting connections will form a triangle, connecting all participants.
 
 1. Go to the **Route Tables** section in the VPC Dashboard.
 2. Select the Route Table associated with the subnets in each VPC from the list.
+
+   | You are..| Route Table Name   |
+   |----------|--------------------|
+   | role-1   | secrecy1-rtb-public|
+   | role-2   | secrecy2-rtb-public|
+   | role-3   | secrecy3-rtb-public|
+
 3. Click **Edit routes** in the Routes tab:
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/68ab564c-138c-43b8-89ad-d87a1a257577">
 4. Add route
