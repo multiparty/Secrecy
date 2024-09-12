@@ -106,7 +106,7 @@ The resulting connections will form a triangle, connecting all participants.
 
 ## 4) Update Route Tables
 
-** Ensure that everyone has created a peering connection before implementing this step
+**Ensure that everyone has created a peering connection before implementing this step**
 
 1. Go to the **Route Tables** section in the VPC Dashboard.
 2. Select the Route Table associated with the subnets in each VPC from the list.
