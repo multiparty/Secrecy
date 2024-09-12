@@ -73,26 +73,7 @@ This step is particularly important to avoid confusion. You will see why in a se
   </tr>
 </table>
 
-## 3) Setup Subnets
-1. Go to the VPC Dashboard
-2. In the left-hand navigation pane, select **"Subnets"**.
-3. Click **"Create subnet"**
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/a9dc2141-7f0f-4e34-8cbb-ef9db2714ae4">
-
-4. Select your VPC from the drop-down. Then the following settings pane pops up.
-  - Name subnet as follows:
-      - role-1: SubScy1
-      - role-2: SubScy2
-      - role-3: SubScy3
-  - Set Availability Zone 'us-east-1a'
-  - IPv4 VPC CIDR block should be your VPC CIDR block
-  - IPv4 subnet CIDR block should be set according to your role:
-    - role-1: 10.0.16.0/20
-    - role-2: 10.1.16.0/20
-    - role-3: 10.2.16.0/20
-  - Hit **"Create subnet"** 
-
-## 4) Create VPC Peering Connection
+## 3) Create VPC Peering Connection
 **You are making only one connection**
 Some people might get confused and try to create two connections because your instance communicates with two other instances. 
 However, you only need to create **ONE** connection, as one of your two peers will also establish a connection with you.
@@ -123,7 +104,7 @@ The resulting connections will form a triangle, connecting all participants.
       - role-3: secrecy23
 8. Click **"Actions"** at the right top, and hit **Accept request**
 
-## 5) Update Route Tables
+## 4) Update Route Tables
 
 ** Ensure that everyone has created a peering connection before implementing this step
 
@@ -168,7 +149,7 @@ The resulting connections will form a triangle, connecting all participants.
 
 6. Click **Save routes**.
 
-## 6) Update Security Groups and Network ACLs
+## 5) Update Security Groups and Network ACLs
 1. Go to the EC2 Dashboard.
 2. Select your instance, choose the **Security** tab, and hit the pop-up link.
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/48931b07-9a17-4a8f-bfbb-81e7ff2f96f7">
@@ -188,7 +169,7 @@ The resulting connections will form a triangle, connecting all participants.
        -  10.0.0.0/16
        -  10.1.0.0/16
 
-## 7) Access Instance and Network Configuration
+## 6) Access Instance and Network Configuration
 
 With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app.
 
@@ -260,7 +241,7 @@ chmod 600 ~/.ssh/id_rsa
 chmod 600 ~/.ssh/config
 ```
 
-## 8) Initiate MPI program
+## 7) Initiate MPI program
 Designate one of two parties with a dataset as an initializing party, and only the initializing party executes the following steps.
 
 You'll need to create a host file in the build directory to run the MPI process. You can do this automatically by running the following command:
