@@ -14,16 +14,16 @@ using namespace jsoncons;
 
 json import_JSON(const std::string& path) {
     json js;
-    std::ifstream json_file(path);  // Use the first command-line argument as the file path
+    std::ifstream json_file(path);  // Use the file path to open JSON
     if (!json_file.is_open()) {
         std::cerr << "Unable to open file: " << path << std::endl;
-        return 1;
+        return json();
     }
     try {
-        json_file >> js;
-    } catch (json::parse_error& e) {
-        std::cerr << "Parse error: " << e.what() << std::endl;
-        return 1;
+        json_file >> js;  // Parse the JSON file
+    } catch (const std::exception& e) {
+        std::cerr << "Error while parsing JSON: " << e.what() << std::endl;
+        return json();
     }
     json_file.close();
     return js;
