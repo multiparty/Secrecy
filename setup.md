@@ -103,20 +103,15 @@ The resulting connections will form a triangle, connecting all participants.
 2. In the left-hand navigation pane, select **"Peering Connections"**.
 3. Click **"Create Peering Connection"**. Make sure that other parties have already created VPCs at this point
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/4af09183-c24f-4789-8902-67d276199cbd">
-4. Fill in parameters, 
-  - Name: Give the Peering Connection a name as below:
-      - role-1: secrecy12
-      - role-2: secrecy23
-      - role-3: secrecy31
-  - VPC ID(Requester): Select your VPC:
-      - role-1: secrecy1
-      - role-2: secrecy2
-      - role-3: secrecy3
-  - VPC ID(Accepter): Select in the following way:
-      - role-1: secrecy2
-      - role-2: secrecy3
-      - role-3: secrecy1
-  - If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
+4. Select parameters per below:
+
+| You are..| Peering Connection Name | VPC ID (Requester) | VPC ID (Accepter) |
+|----------|-------------------------|--------------------|-------------------|
+| role-1   | secrecy12               | secrecy1           | secrecy2          |
+| role-2   | secrecy23               | secrecy2           | secrecy3          |
+| role-3   | secrecy31               | secrecy3           | secrecy1          |
+ 
+ If your partners/other parties use a separate AWS account, select "another account" and enter their Account ID.
 
 5. Click **"Create Peering Connection"**
   <img width="500" alt="image" src="https://github.com/user-attachments/assets/befcb6a1-6a54-4bc4-8cef-a02e5e8e0176">
@@ -136,7 +131,11 @@ The resulting connections will form a triangle, connecting all participants.
 2. Select the Route Table associated with the subnets in each VPC from the list.
 3. Click **Edit routes** in the Routes tab:
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/68ab564c-138c-43b8-89ad-d87a1a257577">
-4. Click **"Add route"** to add a new route:
+4. Add route
+   - Click **"Add route"**
+   - Type in the CIDR Block
+   - Select 'Peering Connection' in the dropdown.
+   - It will pop up another dropdown. Select a Peer Connection per the table below (e.g. pcx-xxx (secrecyXY))
 
    <table border="1" class="dataframe">
   <thead>
