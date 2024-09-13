@@ -47,7 +47,7 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         std::ofstream json_file(filename);
         if(!json_file.is_open()){
             std::cerr << "Error openiing file: " << filename << std::endl;
-            return
+            return;
         }
         
         // Copy the content to output json file
