@@ -26,7 +26,7 @@ void download_from_s3(int rank, const std::string& filename) {
 }
 
 void upload_to_s3(int rank, json output_json, const std::string& filename){
-        // Convert the rank and filename
+        // Convert the rank and filename to Strings
         std::string rankStr = std::to_string(rank+1);
         std::ofstream json_file(filename);
         if(!json_file.is_open()){
@@ -212,7 +212,6 @@ int main(int argc, char** argv) {
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
                 entry["own_val" + std::to_string(j)] = curr_val;
-                // std::cout << ", " << curr_val;
             }
 
             // Their Table from P2
@@ -224,9 +223,7 @@ int main(int argc, char** argv) {
             for (size_t i = 0; i < rec_vals.size(); ++i) {
                int curr_val = rec_vals[i];
                entry["their_val" + std::to_string(i)] = curr_val;
-            //    std::cout << ", " << curr_val;
             }
-            // std::cout << "]" << std::endl;
 
             // Add the entry to the output JSON array
             output_json.push_back(entry);
@@ -239,7 +236,7 @@ int main(int argc, char** argv) {
             return 1;
         }
         download_from_s3(rank + 1, filename);
-        init_sharing();      // Runs sodium_init and checks if itinialization of sodium was successful
+        init_sharing();
         std::string csv_file = "./../" + filename;
         std::ifstream is2(csv_file);
         ojson js2 = csv::decode_csv<ojson>(is2,options);
