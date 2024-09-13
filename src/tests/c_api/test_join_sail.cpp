@@ -42,7 +42,7 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         std::string awsUploadCommand = "aws s3 cp " + filename + " s3://secrecy-bucket" + rankStr +"/";
         int result = system(awsUploadCommand.c_str());
         if (result == 0) {
-            std::cout << "File uploaded successfully!" << std::endl;
+            std::cout << "File uploaded successfully to " << "secrecy-bucket" << rankStr <<std::endl;
         } else {
             std::cerr << "Error uploading file. Command returned: " << result << std::endl;
         }
