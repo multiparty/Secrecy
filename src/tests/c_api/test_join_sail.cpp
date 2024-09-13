@@ -395,8 +395,8 @@ int main(int argc, char** argv) {
             // Their table from P1
             std::vector<int> rec_vals(COLS1-1);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            for (size_t i = 0, i < rec_vals.size(); i++){
-                int curr_val = rec+vals[i];
+            for (size_t i = 0; i < rec_vals.size(); i++){
+                int curr_val = rec_vals[i];
                 entry["their_val" + std::to_string(i)] = curr_val;
                 std::cout << ", " << curr_val;
             }
