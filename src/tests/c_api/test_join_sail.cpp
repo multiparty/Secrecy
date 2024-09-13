@@ -13,15 +13,6 @@ using namespace jsoncons;
 
 void download_from_s3(int rank, const std::string& filename) {
     std::string rankStr = std::to_string(rank);
-    
-    // Check if a file exists
-    std::string awsCheck = "aws s3api head-object --bucket secrecy-bucket" + rankStr + " --key " + filename;
-    int check = system(awsCheck.c_str());
-    if (check!=0){
-        std::cout << filename << " does not exist in secrecy-bucket" << rankStr << std::endl;
-        exit(EXIT_FAILURE); 
-    }
-
     std::string awsCommand = "aws s3 cp s3://secrecy-bucket" + rankStr + "/" + filename + " ../";
     int result = system(awsCommand.c_str());
 
