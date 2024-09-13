@@ -18,7 +18,7 @@ void download_from_s3(int rank, const std::string& filename) {
     std::string awsCheck = "aws s3api head-object --bucket secrecy-bucket" + rankStr + " --key " + filename;
     int check = system(awsCheck.c_str());
     if (check!=0){
-        std::cout << " does not exist in secrecy-bucket" << rankStr << std::endl;
+        std::cout << filename << " does not exist in secrecy-bucket" << rankStr << std::endl;
         exit(EXIT_FAILURE); 
     }
 
