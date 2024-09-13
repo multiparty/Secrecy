@@ -224,7 +224,7 @@ int main(int argc, char** argv) {
         std::ofstream json_file("output.json");
         json_file << pretty_print(output_json); // Pretty print with 4 spaces
         json_file.close();
-        std::string awsUploadCommand = "aws s3 cp output.json s3://secrecy1/";
+        std::string awsUploadCommand = "aws s3 cp output.json s3://secrecy-bucket1/";
         int result = system(awsUploadCommand.c_str());
         if (result == 0) {
             std::cout << "File uploaded successfully!" << std::endl;
