@@ -29,7 +29,7 @@ json import_JSON(const std::string& path) {
 }
 
 void download_from_s3(int rank, const std::string& filename) {
-    std::string rankStr = std::to_string(rank);
+    std::string rankStr = std::to_string(rank+1);
     std::string awsCommand = "aws s3 cp s3://secrecy-bucket" + rankStr + "/" + filename + " ../";
     int result = system(awsCommand.c_str());
 
