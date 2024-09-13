@@ -257,7 +257,7 @@ This step applies **ONLY to role1 and role2**. All setup jobs are done for role3
    - Navigate to the S3 service.
    - Click on the "Create bucket" button.
    - Enter a name for your bucket
-   - 
+   
    | You are..| Bucket Name    |
    |----------|----------------|
    | role-1   | secrecy-bucket1|
