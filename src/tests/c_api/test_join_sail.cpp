@@ -394,6 +394,7 @@ int main(int argc, char** argv) {
             std::vector<int> send_vals(COLS2-1);
             for(int j = 1; j < COLS2; j++){
                 int curr_val = js2[t2][j].as<int>();
+                send_vals[j-1] = curr_val;
                 entry["own_val" + std::to_string(j)] = curr_val;
                 std::cout << ", " << curr_val;
             }
