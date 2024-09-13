@@ -41,6 +41,29 @@ void download_from_s3(int rank, const std::string& filename) {
     }
 }
 
+void upload_to_s3(int rank, json output_json, const std::string& filename){
+        // Convert the rank and filename
+        std::string rankStr = std::to_string(rank);
+        std::ofstream json_file(filename);
+        if(!json_file.is_open()){
+            std::cerr << "Error openiing file: " << filename << std::endl;
+            return
+        }
+        
+        // Copy the content to output json file
+        json_file << pretty_print(output_json);
+        json_file.close();
+
+        // Run the command
+        std::string awsUploadCommand = "aws s3 cp " + filename + " output.json s3://secrecy-bucket" + rankStr +"/";
+        int result = system(awsUploadCommand.c_str());
+        if (result == 0) {
+            std::cout << "File uploaded successfully!" << std::endl;
+        } else {
+            std::cerr << "Error uploading file. Command returned: " << result << std::endl;
+        }
+}
+
 int main(int argc, char** argv) {
     // Checking json file path
     if (argc < 3) {
@@ -199,7 +222,7 @@ int main(int argc, char** argv) {
             entry["index_val"] = index_val;
             std::cout << "[" << index_val;
 
-            // Own Table
+            // Build Own Table
             std::vector<int> send_vals(COLS1-1);
             for(int j = 1; j < COLS1; j++){
                 int curr_val = js1[t1][j].as<int>();
@@ -208,9 +231,12 @@ int main(int argc, char** argv) {
                 std::cout << ", " << curr_val;
             }
 
-            // Their Table
+            // Their Table from P2
             std::vector<int> rec_vals(COLS2-1);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            
+            // Send to P2
+            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
             for (size_t i = 0; i < rec_vals.size(); ++i) {
                int curr_val = rec_vals[i];
                entry["their_val" + std::to_string(i)] = curr_val;
@@ -221,16 +247,7 @@ int main(int argc, char** argv) {
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
-        std::ofstream json_file("output.json");
-        json_file << pretty_print(output_json); // Pretty print with 4 spaces
-        json_file.close();
-        std::string awsUploadCommand = "aws s3 cp output.json s3://secrecy-bucket1/";
-        int result = system(awsUploadCommand.c_str());
-        if (result == 0) {
-            std::cout << "File uploaded successfully!" << std::endl;
-        } else {
-            std::cerr << "Error uploading file. Command returned: " << result << std::endl;
-        }
+        upload_to_s3(0, output_json, "output.json");
     } else if (rank == 1) {  // P2
         std::string filename = argv[2];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
@@ -352,15 +369,40 @@ int main(int argc, char** argv) {
         std::vector<int> t2_index(size_to_send);
         MPI_Recv(t2_index.data(), size_to_send, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        for (int i = 0; i < size_to_send; i++) {
-            int t2 = t2_index[i];
+        // JSON object to hold the results
+        jsoncons::json output_json = jsoncons::json::array();
 
-            // send back to p1
+        std::cout << "/// Joined Table ///" << std::endl;
+        for (int i = 0; i < size_to_send; i++) {
+            jsoncons::json entry = jsoncons::json::object();
+
+            // Index/Key Val
+            int t2 = t2_index[i];
+            long long index_val = js2[t2][0].as<int>();
+            entry["index_val"] = index_val;
+            std::cout << "[" << index_val;
+
+            // Build Own Table
             std::vector<int> send_vals(COLS2-1);
             for(int j = 1; j < COLS2; j++){
-                send_vals[j-1] = js2[t2][j].as<int>();
+                int curr_val = js2[t2][j].as<int>();
+                entry["own_val" + std::to_string(j)] = curr_val;
+                std::cout << ", " << curr_val;
             }
+            // Send to P1
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
+
+            // Their table from P1
+            std::vector<int> rec_vals(COLS1-1);
+            MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (size_t i = 0, i < rec_vals.size(); i++){
+                int curr_val = rec+vals[i];
+                entry["their_val" + std::to_string(i)] = curr_val;
+                std::cout << ", " << curr_val;
+            }
+            std::cout << "]" << std::endl;
+            output_json.push_back(entry);
+            upload_to_s3(1, output_json, "output.json");
         }
     } else {  // P3
 
