@@ -29,7 +29,7 @@ json import_JSON(const std::string& path) {
 }
 
 void download_from_s3(int rank, const std::string& filename) {
-    std::string rankStr = std::to_string(rank+1);
+    std::string rankStr = std::to_string(rank);
     std::string awsCommand = "aws s3 cp s3://secrecy-bucket" + rankStr + "/" + filename + " ../";
     int result = system(awsCommand.c_str());
 
@@ -43,7 +43,7 @@ void download_from_s3(int rank, const std::string& filename) {
 
 void upload_to_s3(int rank, json output_json, const std::string& filename){
         // Convert the rank and filename
-        std::string rankStr = std::to_string(rank);
+        std::string rankStr = std::to_string(rank+1);
         std::ofstream json_file(filename);
         if(!json_file.is_open()){
             std::cerr << "Error openiing file: " << filename << std::endl;
