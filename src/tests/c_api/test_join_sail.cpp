@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
             for(int j = 1; j < COLS1; j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
-                // entry["own_val" + std::to_string(j)] = curr_val;
+                entry["own_val" + std::to_string(j)] = curr_val;
                 // std::cout << ", " << curr_val;
             }
 
