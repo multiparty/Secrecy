@@ -11,23 +11,6 @@ using namespace jsoncons;
 #define SHARE_TAG 193
 #define RESULT_TAG 197
 
-json import_JSON(const std::string& path) {
-    json js;
-    std::ifstream json_file(path);  // Use the file path to open JSON
-    if (!json_file.is_open()) {
-        std::cerr << "Unable to open file: " << path << std::endl;
-        return json();
-    }
-    try {
-        json_file >> js;  // Parse the JSON file
-    } catch (const std::exception& e) {
-        std::cerr << "Error while parsing JSON: " << e.what() << std::endl;
-        return json();
-    }
-    json_file.close();
-    return js;
-}
-
 void download_from_s3(int rank, const std::string& filename) {
     std::string rankStr = std::to_string(rank);
     
@@ -36,6 +19,7 @@ void download_from_s3(int rank, const std::string& filename) {
     int check = system(awsCheck.c_str());
     if (check!=0){
         std::cout << " does not exist in secrecy-bucket" << rankStr << std::endl;
+        exit(EXIT_FAILURE); 
     }
 
     std::string awsCommand = "aws s3 cp s3://secrecy-bucket" + rankStr + "/" + filename + " ../";
@@ -46,6 +30,7 @@ void download_from_s3(int rank, const std::string& filename) {
         std::cout << "File downloaded successfully!" << std::endl;
     } else {
         std::cerr << "Error downloading file. Command returned: " << result << std::endl;
+        exit(EXIT_FAILURE); 
     }
 }
 
