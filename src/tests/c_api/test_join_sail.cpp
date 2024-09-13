@@ -231,7 +231,6 @@ int main(int argc, char** argv) {
         } else {
             std::cerr << "Error uploading file. Command returned: " << result << std::endl;
         }
-#endif
     } else if (rank == 1) {  // P2
         std::string filename = argv[2];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
