@@ -13,7 +13,9 @@ This guide navigates you through how to set up an AWS environment and get the MP
 
 ## Before You Start
 **Designate each party to roles 1, 2, and 3**
-This step is particularly important to avoid confusion. You will see why in a second.
+- If you have a dataset, you must be role-1 or 2.
+- If you are providing computation only, be role-3.
+- This step is crucial to avoid confusion. You will see why in a second.
 
 ## 1) Create VPC 
 
@@ -248,7 +250,52 @@ chmod 600 ~/.ssh/id_rsa
 chmod 600 ~/.ssh/config
 ```
 
-## 7) Initiate MPI program
+## 7) Setup S3 Storage
+This step applies **ONLY to role1 and role2**. All setup jobs are done for role3 at this point.
+
+1. Create an S3 Bucket for User Input
+   - Navigate to the S3 service.
+   - Click on the "Create bucket" button.
+   - Enter a name for your bucket
+   
+   | You are..| Bucket Name    |
+   |----------|----------------|
+   | role-1   | secrecy-bucket1|
+   | role-2   | secrecy-bucket2|
+
+   - Click "Create bucket."
+
+## 8) Establish IAM
+1. Create an IAM Role for EC2 to Access S3
+   - Go to the AWS Management Console and navigate to the **IAM** service.
+   - Click on "Roles" in the sidebar and then click the "Create role" button.
+   - Choose **AWS service** and then **EC2** in the "Service or use case" dropdown.
+   - Click "Next"
+
+2. Attach S3 Full Access Policy
+   - In the permissions policies, search for `AmazonS3FullAccess`.
+   - Select the checkbox next to `AmazonS3FullAccess` to grant full access to S3.
+   - Click "Next"
+
+3. Review and Create Role
+   - Enter a name for your role
+     
+      | You are..| Name    |
+      |----------|---------|
+      | role-1   | secrecy1|
+      | role-2   | secrecy2|
+     
+   - Leave other variables untouched.
+   - Click "Create role."
+
+4. Attach IAM Role to EC2 Instance
+   - Go to the **EC2 Dashboard** in the AWS Management Console.
+   - Select your EC2 instance.
+   - Click on "Actions" > "Security" > "Modify IAM Role."
+   - Choose the newly created IAM role (`EC2-S3-Access-Role`) and click "Update IAM Role."
+
+## 9) Initiate MPI program
+This step is **ONLY for role1**.
 Designate one of two parties with a dataset as an initializing party, and only the initializing party executes the following steps.
 
 You'll need to create a host file in the build directory to run the MPI process. You can do this automatically by running the following command:
@@ -265,12 +312,15 @@ nano hostfile.txt
 ```
 
 The resulting hostfile should resemble the following format (The order matters):
+```
+<Private IP of role1>
+<Private IP of role2>
+<Private IP of role3>
+```
 
-<img width="600" alt="image" src="https://github.com/user-attachments/assets/0d37b700-cb77-4653-ae44-4c24021e4149">
-
-Once the host file is prepared, the initiating party can run the Secrecy algorithm with the command:
+Once the host file is prepared, ensure that you are in the 'build' directory and run the program:
 
 ```
-mpirun -np 3 --hostfile hostfile.txt ./test_join_sail ./../sample1.csv ./../sample2.csv
+mpirun -np 3 --hostfile hostfile.txt ./test_join_sail sample1.csv sample2.csv
 ```
 

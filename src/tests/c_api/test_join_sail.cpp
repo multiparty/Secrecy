@@ -7,10 +7,46 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/csv/csv.hpp>
 using namespace jsoncons;
-#define DEBUG 0
 #define INIT_TAG 191
 #define SHARE_TAG 193
 #define RESULT_TAG 197
+
+void download_from_s3(int rank, const std::string& filename) {
+    std::string rankStr = std::to_string(rank);
+    std::string awsCommand = "aws s3 cp s3://secrecy-bucket" + rankStr + "/" + filename + " ../";
+    int result = system(awsCommand.c_str());
+
+    // Check if the command executed successfully
+    if (result == 0) {
+        std::cout << "File downloaded successfully from " << " secrecy-bucket" << rankStr << std::endl;
+    } else {
+        std::cerr << "Error downloading file. Command returned: " << result << std::endl;
+        exit(EXIT_FAILURE); 
+    }
+}
+
+void upload_to_s3(int rank, json output_json, const std::string& filename){
+        // Convert the rank and filename to Strings
+        std::string rankStr = std::to_string(rank+1);
+        std::ofstream json_file(filename);
+        if(!json_file.is_open()){
+            std::cerr << "Error openiing file: " << filename << std::endl;
+            return;
+        }
+        
+        // Copy the content to output json file
+        json_file << pretty_print(output_json);
+        json_file.close();
+
+        // Run the command
+        std::string awsUploadCommand = "aws s3 cp " + filename + " s3://secrecy-bucket" + rankStr +"/";
+        int result = system(awsUploadCommand.c_str());
+        if (result == 0) {
+            std::cout << "File uploaded successfully to " << "secrecy-bucket" << rankStr <<std::endl;
+        } else {
+            std::cerr << "Error uploading file. Command returned: " << result << std::endl;
+        }
+}
 
 int main(int argc, char** argv) {
     // Checking json file path
@@ -44,8 +80,10 @@ int main(int argc, char** argv) {
             std::cerr << "Error: The file '" << filename << "' is not a CSV file. Please provide a .csv file." << std::endl;
             return 1;
         }
+        download_from_s3(rank + 1, filename);
         init_sharing();  // Runs sodium_init and checks if itinialization of sodium was successful
-        std::ifstream is1(argv[1]);
+        std::string csv_file = "./../" + filename;
+        std::ifstream is1(csv_file);
         ojson js1 = csv::decode_csv<ojson>(is1,options);
         ROWS1 = static_cast<int>(js1.size());
         COLS1 = static_cast<int>(js1[0].size());
@@ -138,16 +176,6 @@ int main(int argc, char** argv) {
         Data out[ROWS1 * ROWS2]; /** TODO: only rank0 needs to allocate **/
         open_b_array(res, ROWS1 * ROWS2, out);
 
-#if DEBUG
-        for (int i = 0; i < ROWS1 * ROWS2; i++) {
-            printf("[%d] %lld\t", i, out[i]);
-            if (i == 0 || i == 9 || i == 18) {
-                assert(out[i] == 1);
-            } else {
-                assert(out[i] == 0);
-            }
-        }
-#else
         // Store indices
         std::vector<int> t1_index;
         std::vector<int> t2_index;
@@ -168,7 +196,7 @@ int main(int argc, char** argv) {
         // JSON object to hold the results
         jsoncons::json output_json = jsoncons::json::array();
 
-        std::cout << "/// Joined Table ///" << std::endl;
+        // std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
             jsoncons::json entry = jsoncons::json::object();
             
@@ -176,42 +204,41 @@ int main(int argc, char** argv) {
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
             entry["index_val"] = index_val;
-            std::cout << "[" << index_val;
+            // std::cout << "[" << index_val;
 
-            // Own Table
+            // Build Own Table
             std::vector<int> send_vals(COLS1-1);
             for(int j = 1; j < COLS1; j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
                 entry["own_val" + std::to_string(j)] = curr_val;
-                std::cout << ", " << curr_val;
             }
 
-            // Their Table
+            // Their Table from P2
             std::vector<int> rec_vals(COLS2-1);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            
+            // Send to P2
+            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
             for (size_t i = 0; i < rec_vals.size(); ++i) {
                int curr_val = rec_vals[i];
                entry["their_val" + std::to_string(i)] = curr_val;
-               std::cout << ", " << curr_val;
             }
-            std::cout << "]" << std::endl;
- 
+
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
-        std::ofstream json_file("output.json");
-        json_file << pretty_print(output_json); // Pretty print with 4 spaces
-        json_file.close();
-#endif
+        upload_to_s3(0, output_json, "output.json");
     } else if (rank == 1) {  // P2
         std::string filename = argv[2];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
             std::cerr << "Error: The file '" << filename << "' is not a CSV file. Please provide a .csv file." << std::endl;
             return 1;
         }
-        init_sharing();      // Runs sodium_init and checks if itinialization of sodium was successful
-        std::ifstream is2(argv[2]);
+        download_from_s3(rank + 1, filename);
+        init_sharing();
+        std::string csv_file = "./../" + filename;
+        std::ifstream is2(csv_file);
         ojson js2 = csv::decode_csv<ojson>(is2,options);
         ROWS2 = static_cast<int>(js2.size());
         COLS2 = static_cast<int>(js2[0].size());
@@ -323,16 +350,42 @@ int main(int argc, char** argv) {
         std::vector<int> t2_index(size_to_send);
         MPI_Recv(t2_index.data(), size_to_send, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        for (int i = 0; i < size_to_send; i++) {
-            int t2 = t2_index[i];
+        // JSON object to hold the results
+        jsoncons::json output_json = jsoncons::json::array();
 
-            // send back to p1
+        std::cout << "/// Joined Table ///" << std::endl;
+        for (int i = 0; i < size_to_send; i++) {
+            jsoncons::json entry = jsoncons::json::object();
+
+            // Index/Key Val
+            int t2 = t2_index[i];
+            long long index_val = js2[t2][0].as<int>();
+            entry["index_val"] = index_val;
+            std::cout << "[" << index_val;
+
+            // Build Own Table
             std::vector<int> send_vals(COLS2-1);
             for(int j = 1; j < COLS2; j++){
-                send_vals[j-1] = js2[t2][j].as<int>();
+                int curr_val = js2[t2][j].as<int>();
+                send_vals[j-1] = curr_val;
+                entry["own_val" + std::to_string(j)] = curr_val;
+                std::cout << ", " << curr_val;
             }
+            // Send to P1
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
+
+            // Their table from P1
+            std::vector<int> rec_vals(COLS1-1);
+            MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (size_t i = 0; i < rec_vals.size(); i++){
+                int curr_val = rec_vals[i];
+                entry["their_val" + std::to_string(i)] = curr_val;
+                std::cout << ", " << curr_val;
+            }
+            std::cout << "]" << std::endl;
+            output_json.push_back(entry);
         }
+        upload_to_s3(1, output_json, "output.json");
     } else {  // P3
 
         //////// Receive ROWS1 and COLS1 from P1
