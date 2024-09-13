@@ -278,7 +278,13 @@ This step applies **ONLY to role1 and role2**. All setup jobs are done for role3
    - Click "Next"
 
 3. Review and Create Role
-   - Enter a name for your role (e.g., `secrecy1` or `secrecy2).
+   - Enter a name for your role
+     
+      | You are..| Name    |
+      |----------|---------|
+      | role-1   | secrecy1|
+      | role-2   | secrecy2|
+     
    - Leave other variables untouched.
    - Click "Create role."
 
