@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
         // JSON object to hold the results
         jsoncons::json output_json = jsoncons::json::array();
 
-        std::cout << "/// Joined Table ///" << std::endl;
+        // std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
             jsoncons::json entry = jsoncons::json::object();
             
@@ -220,15 +220,15 @@ int main(int argc, char** argv) {
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
             entry["index_val"] = index_val;
-            std::cout << "[" << index_val;
+            // std::cout << "[" << index_val;
 
             // Build Own Table
             std::vector<int> send_vals(COLS1-1);
             for(int j = 1; j < COLS1; j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
-                entry["own_val" + std::to_string(j)] = curr_val;
-                std::cout << ", " << curr_val;
+                // entry["own_val" + std::to_string(j)] = curr_val;
+                // std::cout << ", " << curr_val;
             }
 
             // Their Table from P2
@@ -240,9 +240,9 @@ int main(int argc, char** argv) {
             for (size_t i = 0; i < rec_vals.size(); ++i) {
                int curr_val = rec_vals[i];
                entry["their_val" + std::to_string(i)] = curr_val;
-               std::cout << ", " << curr_val;
+            //    std::cout << ", " << curr_val;
             }
-            std::cout << "]" << std::endl;
+            // std::cout << "]" << std::endl;
 
             // Add the entry to the output JSON array
             output_json.push_back(entry);
