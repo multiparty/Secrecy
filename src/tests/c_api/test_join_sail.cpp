@@ -18,7 +18,7 @@ void download_from_s3(int rank, const std::string& filename) {
 
     // Check if the command executed successfully
     if (result == 0) {
-        std::cout << "File downloaded successfully!" << std::endl;
+        std::cout << "File downloaded successfully from " << " secrecy-bucket" << rankStr << std::endl;
     } else {
         std::cerr << "Error downloading file. Command returned: " << result << std::endl;
         exit(EXIT_FAILURE); 
