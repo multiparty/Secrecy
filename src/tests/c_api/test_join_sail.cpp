@@ -7,7 +7,6 @@
 #include <jsoncons/json.hpp>
 #include <jsoncons_ext/csv/csv.hpp>
 using namespace jsoncons;
-#define DEBUG 0
 #define INIT_TAG 191
 #define SHARE_TAG 193
 #define RESULT_TAG 197
@@ -170,16 +169,6 @@ int main(int argc, char** argv) {
         Data out[ROWS1 * ROWS2]; /** TODO: only rank0 needs to allocate **/
         open_b_array(res, ROWS1 * ROWS2, out);
 
-#if DEBUG
-        for (int i = 0; i < ROWS1 * ROWS2; i++) {
-            printf("[%d] %lld\t", i, out[i]);
-            if (i == 0 || i == 9 || i == 18) {
-                assert(out[i] == 1);
-            } else {
-                assert(out[i] == 0);
-            }
-        }
-#else
         // Store indices
         std::vector<int> t1_index;
         std::vector<int> t2_index;
@@ -235,7 +224,7 @@ int main(int argc, char** argv) {
         std::ofstream json_file("output.json");
         json_file << pretty_print(output_json); // Pretty print with 4 spaces
         json_file.close();
-        std::string awsUploadCommand = "aws s3 cp output.json s3://secrecy-output/";
+        std::string awsUploadCommand = "aws s3 cp output.json s3://secrecy1/";
         int result = system(awsUploadCommand.c_str());
         if (result == 0) {
             std::cout << "File uploaded successfully!" << std::endl;
