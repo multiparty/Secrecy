@@ -402,8 +402,8 @@ int main(int argc, char** argv) {
             }
             std::cout << "]" << std::endl;
             output_json.push_back(entry);
-            upload_to_s3(1, output_json, "output.json");
         }
+        upload_to_s3(1, output_json, "output.json");
     } else {  // P3
 
         //////// Receive ROWS1 and COLS1 from P1
