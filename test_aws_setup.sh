@@ -43,17 +43,17 @@ fi
 
 # Check Ping to successor VPC
 echo "Pinging peer instance (successor) with IP: $SUCC"
-ping -c 4 $SUCC > /dev/null 2>&1
+nmap -p 22 $SUCC > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "Ping successful to peer instance (successor) at IP: $SUCC"
+    echo "connection check successful to peer instance (successor) at IP: $SUCC"
 else
-    echo "Ping failed to peer instance (successor) at IP: $SUCC"
+    echo "connection check failed to peer instance (successor) at IP: $SUCC"
 fi
 
 # Check Ping to predecessor VPC
 echo "Pinging peer instance (predecessor) with IP: $PRED"
-ping -c 4 $PRED > /dev/null 2>&1
+nmap -p 22 $PRED > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
     echo "Ping successful to peer instance (predecessor) at IP: $PRED"

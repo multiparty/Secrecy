@@ -194,7 +194,7 @@ ssh -i /path/to/your/key.pem ec2-user@your-public-IP
 
 ```
 sudo yum groupinstall -y "Development Tools" \
-&& sudo yum install -y cmake libsodium libsodium-devel openmpi openmpi-devel pkg-config git openssh-server nano \
+&& sudo yum install -y cmake libsodium libsodium-devel openmpi openmpi-devel pkg-config git openssh-server nano nmap \
 && git clone https://github.com/multiparty/Secrecy.git \
 && mkdir -p Secrecy/include/external-lib \
 && git clone https://github.com/mfaisal97/sql-parser.git Secrecy/include/external-lib/sql-parser \
