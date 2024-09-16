@@ -37,7 +37,7 @@ if [ "$ROLE" -eq 1 ] || [ "$ROLE" -eq 2 ]; then
     if [ $? -eq 0 ]; then
         echo "S3 access confirmed for bucket: $S3_BUCKET_NAME"
     else
-        echo "S3 access failed for bucket: $S3_BUCKET_NAME"
+        echo "S3 access failed for bucket: $S3_BUCKET_NAME. Please name the bucket name as instructed in the guide"
     fi
 fi
 
@@ -48,7 +48,7 @@ nmap -p 22 $SUCC > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "Connection check successful to peer instance (successor) at IP: $SUCC"
 else
-    echo "Connection check failed to peer instance (successor) at IP: $SUCC"
+    echo "Connection check failed to peer instance (successor) at IP: $SUCC. Ensure that $SUCC has created EC2 instance, VPC, Peering Connection and that the IP is correct"
 fi
 
 # Check Ping to predecessor VPC
@@ -58,7 +58,7 @@ nmap -p 22 $PRED > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "Connection check successful to peer instance (predecessor) at IP: $PRED"
 else
-    echo "Connection check failed to peer instance (predecessor) at IP: $PRED"
+    echo "Connection check failed to peer instance (predecessor) at IP: $PRED. Ensure that $SUCC has created EC2 instance, VPC, Peering Connection and that the IP is correct"
 fi
 
 
