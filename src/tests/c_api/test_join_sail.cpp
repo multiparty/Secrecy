@@ -230,13 +230,6 @@ int main(int argc, char** argv) {
         
         // Merge P1's and P2's header into an object
         std::vector<int> merged = mergeVecs(js1_header, js2_header);
-        for (int value : merged) {
-            std::cout << value << " ";
-        }
-        std::cout << std::endl;
-
-        // Append it to output_json
-        output_json.push_back(merged);
 
         // std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
@@ -245,7 +238,7 @@ int main(int argc, char** argv) {
             // Index/Key Val
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
-            entry["index_val"] = index_val;
+            entry[js1_header[0]] = index_val;
             // std::cout << "[" << index_val;
 
             // Build Own Table
@@ -253,7 +246,7 @@ int main(int argc, char** argv) {
             for(int j = 1; j < COLS1; j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
-                entry["own_val" + std::to_string(j)] = curr_val;
+                entry[js1_header[j]] = curr_val;
             }
 
             // Their Table from P2
@@ -262,9 +255,9 @@ int main(int argc, char** argv) {
             
             // Send to P2
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
-            for (size_t i = 0; i < rec_vals.size(); ++i) {
-               int curr_val = rec_vals[i];
-               entry["their_val" + std::to_string(i)] = curr_val;
+            for (size_t j = 0; j < rec_vals.size(); ++j) {
+               int curr_val = rec_vals[j];
+               entry[js2_header[j]] = curr_val;
             }
 
             // Add the entry to the output JSON array
@@ -404,35 +397,24 @@ int main(int argc, char** argv) {
         // Receive P1's header from P1, except key col
         std::vector<int> js1_header(COLS1-1);
         MPI_Recv(js1_header.data(), COLS1-1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        std::cout << "Header1 Received" << std::endl;
 
         // Send P2's header to P1, except key col
         std::vector<int> js2_header;
         for (int i = 1; i<COLS2; i++){
             js2_header.push_back(js2_header_json[i].as<int>());
         }
-
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
-        std::cout << "Header2 Received" << std::endl;
         
         // Merge P2's and P1's header into an object
         std::vector<int> merged = mergeVecs(js2_header, js1_header);
-        std::cout << "Headers merged";
-        for (int value : merged) {
-            std::cout << value << " ";
-        }
-        std::cout << std::endl;
         
-        // Append it to output_json
-        output_json.push_back(merged);
-
         for (int i = 0; i < size_to_send; i++) {
             jsoncons::json entry = jsoncons::json::object();
 
             // Index/Key Val
             int t2 = t2_index[i];
             long long index_val = js2[t2][0].as<int>();
-            entry["index_val"] = index_val;
+            entry[js2_header[0]] = index_val;
             std::cout << "[" << index_val;
 
             // Build Own Table
@@ -440,7 +422,7 @@ int main(int argc, char** argv) {
             for(int j = 1; j < COLS2; j++){
                 int curr_val = js2[t2][j].as<int>();
                 send_vals[j-1] = curr_val;
-                entry["own_val" + std::to_string(j)] = curr_val;
+                entry[js2_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             // Send to P1
@@ -449,9 +431,9 @@ int main(int argc, char** argv) {
             // Their table from P1
             std::vector<int> rec_vals(COLS1-1);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            for (size_t i = 0; i < rec_vals.size(); i++){
-                int curr_val = rec_vals[i];
-                entry["their_val" + std::to_string(i)] = curr_val;
+            for (size_t j = 0; j < rec_vals.size(); j++){
+                int curr_val = rec_vals[j];
+                entry[js1_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
