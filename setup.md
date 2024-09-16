@@ -17,7 +17,7 @@ This guide navigates you through how to set up an AWS environment and get the MP
 - [4) Setup S3 Storage](#4-Setup-S3-Storage)
 - [5) Establish IAM](#5-Establish-IAM)
 - [6) Launch EC2 Instance](#6-Launch-EC2-Instance)
-- [7) Update Security Groups and Network ACLs](#7-Update-Security-Groups-and-Network-ACLs)
+- [7) Update Security Groups](#7-Update-Security-Groups)
 - [8) Access Instance and Network Configuration](#8-Access-Instance-and-Network-Configuration)
 - [9) Check Configuration](#9-Check-Configuration)
 - [10) Initiate MPI program](#10-Initiate-MPI-program)
@@ -211,7 +211,7 @@ This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launc
 </table>
 
 
-## 7) Update Security Groups and Network ACLs
+## 7) Update Security Groups
 1. Navigate to the **EC2 Dashboard** in the AWS Management Console.
 2. Select your instance, choose the **Security** tab, and hit the pop-up link.
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/48931b07-9a17-4a8f-bfbb-81e7ff2f96f7">
