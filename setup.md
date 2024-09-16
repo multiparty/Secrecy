@@ -194,7 +194,7 @@ ssh -i /path/to/your/key.pem ec2-user@your-public-IP
 
 ```
 sudo yum groupinstall -y "Development Tools" \
-&& sudo yum install -y cmake libsodium libsodium-devel openmpi openmpi-devel pkg-config git openssh-server nano \
+&& sudo yum install -y cmake libsodium libsodium-devel openmpi openmpi-devel pkg-config git openssh-server nano nmap \
 && git clone https://github.com/multiparty/Secrecy.git \
 && mkdir -p Secrecy/include/external-lib \
 && git clone https://github.com/mfaisal97/sql-parser.git Secrecy/include/external-lib/sql-parser \
@@ -251,7 +251,7 @@ chmod 600 ~/.ssh/config
 ```
 
 ## 7) Setup S3 Storage
-This step applies **ONLY to role1 and role2**. All setup jobs are done for role3 at this point.
+This step applies **ONLY to role1 and role2**. All setup jobs are done for role3 at this point. For role3, please skip to [Check Configuration](#9-check-configuration)
 
 1. Create an S3 Bucket for User Input
    - Navigate to the S3 service.
@@ -294,18 +294,25 @@ This step applies **ONLY to role1 and role2**. All setup jobs are done for role3
    - Click on "Actions" > "Security" > "Modify IAM Role."
    - Choose the newly created IAM role (`EC2-S3-Access-Role`) and click "Update IAM Role."
 
-## 9) Initiate MPI program
+## 9) Check Configuration
+
+1. Give permission to execute the shell script
+
+```
+chmod +x ../test_aws_setup.sh
+```
+
+2. Run a test script to 
+
+```
+../test_aws_setup.sh
+```
+
+## 10) Initiate MPI program
 This step is **ONLY for role1**.
 Designate one of two parties with a dataset as an initializing party, and only the initializing party executes the following steps.
 
-You'll need to create a host file in the build directory to run the MPI process. You can do this automatically by running the following command:
-
-```
- echo -e "<public IP of your instance>\n<public IP of another party's instance>\n<public IP of last instance>" > hostfile.txt
-```
-Make sure you replace <IPs>, before running the command.
-
-Alternatively, you can create it manually by opening the file in a text editor:
+You'll need to create a host file in the build directory to run the MPI process. You can create it by opening the file in a text editor:
 
 ```
 nano hostfile.txt
@@ -323,4 +330,3 @@ Once the host file is prepared, ensure that you are in the 'build' directory and
 ```
 mpirun -np 3 --hostfile hostfile.txt ./test_join_sail sample1.csv sample2.csv
 ```
-
