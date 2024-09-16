@@ -52,7 +52,7 @@ This guide navigates you through how to set up an AWS environment and get the MP
   </tr>
 </table>
 
-## 2) Create VPC Peering Connection
+## 2) Create Peering Connection
 **You are making only one connection**
 Some people might get confused and try to create two connections because your instance communicates with two other instances. 
 However, you only need to create **ONE** connection, as one of your two peers will also establish a connection with you.
