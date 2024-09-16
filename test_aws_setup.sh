@@ -42,23 +42,23 @@ if [ "$ROLE" -eq 1 ] || [ "$ROLE" -eq 2 ]; then
 fi
 
 # Check Ping to successor VPC
-echo "Pinging peer instance (successor) with IP: $SUCC"
+echo "Checking Connection with peer instance (successor) with IP: $SUCC"
 nmap -p 22 $SUCC > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "connection check successful to peer instance (successor) at IP: $SUCC"
+    echo "Connection check successful to peer instance (successor) at IP: $SUCC"
 else
-    echo "connection check failed to peer instance (successor) at IP: $SUCC"
+    echo "Connection check failed to peer instance (successor) at IP: $SUCC"
 fi
 
 # Check Ping to predecessor VPC
-echo "Pinging peer instance (predecessor) with IP: $PRED"
+echo "Checking Connection with peer instance (predecessor) with IP: $PRED"
 nmap -p 22 $PRED > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "Ping successful to peer instance (predecessor) at IP: $PRED"
+    echo "Connection check successful to peer instance (predecessor) at IP: $PRED"
 else
-    echo "Ping failed to peer instance (predecessor) at IP: $PRED"
+    echo "Connection check failed to peer instance (predecessor) at IP: $PRED"
 fi
 
 
