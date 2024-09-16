@@ -411,7 +411,7 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
         
         // Append it to output_json
-        output_json.push_back(merged)
+        output_json.push_back(merged);
 
         for (int i = 0; i < size_to_send; i++) {
             jsoncons::json entry = jsoncons::json::object();
