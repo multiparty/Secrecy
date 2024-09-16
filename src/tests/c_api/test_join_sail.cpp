@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     const int succ = get_succ();  // Checks initialization and returns an assigned rank/index of successor party
     
     // Common csv option for party1 and 2
-    auto options = csv::csv_options{}.assume_header(false).mapping_kind(csv::csv_mapping_kind::n_rows);
+    auto options = csv::csv_options{}.assume_header(true).mapping_kind(csv::csv_mapping_kind::n_rows);
     if (rank == 0) {     // P1: Party-1
         std::string filename = argv[1];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
@@ -84,7 +84,9 @@ int main(int argc, char** argv) {
         init_sharing();  // Runs sodium_init and checks if itinialization of sodium was successful
         std::string csv_file = "./../" + filename;
         std::ifstream is1(csv_file);
-        ojson js1 = csv::decode_csv<ojson>(is1,options);
+        ojson js1_orig = csv::decode_csv<ojson>(is1,options);
+        ojson js1_header = js1_orig["header"];
+        ojson js1 = js1_orig["body"];
         ROWS1 = static_cast<int>(js1.size());
         COLS1 = static_cast<int>(js1[0].size());
         //////// Send ROWS1 and COLS1 to P2 and 3
