@@ -159,7 +159,7 @@ This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launc
 1. Create an IAM Role for EC2 to Access S3
    - Go to the AWS Management Console and navigate to the **IAM** service.
    - Click on "Roles" in the sidebar and then click the "Create role" button.
-   - Choose **AWS service** and then **EC2** in the "Service or use case" dropdown.
+   - Choose **AWS service** and then **s3** in the "Service or use case" dropdown.
    - Click "Next"
 
 2. Attach S3 Full Access Policy
