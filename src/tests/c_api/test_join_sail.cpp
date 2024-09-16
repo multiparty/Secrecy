@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
         for (int i = 1; i<COLS1; i++){
             js1_header.push_back(js1_header_json[i].as<int>());
         }
-        MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
+        MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
         
         // Receive P2's header, except key col
         std::vector<int> js2_header(COLS2-1);
@@ -410,7 +410,7 @@ int main(int argc, char** argv) {
             js2_header.push_back(js2_header_json[i].as<int>());
         }
 
-        MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
+        MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
         
         // Merge P2's and P1's header into an object
         std::vector<int> merged = mergeVecs(js2_header, js1_header);
