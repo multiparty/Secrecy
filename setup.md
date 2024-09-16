@@ -251,7 +251,7 @@ chmod 600 ~/.ssh/config
 ```
 
 ## 7) Setup S3 Storage
-This step applies **ONLY to role1 and role2**. All setup jobs are done for role3 at this point. For role3, please skip to [Check Configuration](## 9)-Check-Configuration)
+This step applies **ONLY to role1 and role2**. All setup jobs are done for role3 at this point. For role3, please skip to [Check Configuration](#9-check-configuration)
 
 1. Create an S3 Bucket for User Input
    - Navigate to the S3 service.
