@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
             for (size_t j = 0; j < rec_vals.size(); ++j) {
                int curr_val = rec_vals[j];
-               entry[js2_header[j]] = curr_val;
+               entry[std::to_string(js2_header[j])] = curr_val;
             }
 
             // Add the entry to the output JSON array
@@ -433,7 +433,7 @@ int main(int argc, char** argv) {
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (size_t j = 0; j < rec_vals.size(); j++){
                 int curr_val = rec_vals[j];
-                entry[js1_header[j]] = curr_val;
+                entry[std::to_string(js1_header[j])] = curr_val;
                 std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
