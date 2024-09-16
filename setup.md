@@ -126,7 +126,7 @@ The resulting connections will form a triangle, connecting all participants.
 
 
 ## 4) Setup S3 Storage
-This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](##6-Launch-EC2-Instance)
+This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](#6-Launch-EC2-Instance)
 
 1. Create an S3 Bucket for User Input
    - Navigate to the S3 service.
@@ -141,7 +141,7 @@ This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launc
    - Click "Create bucket."
 
 ## 5) Establish IAM
-This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](##6-Launch-EC2-Instance)
+This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](#6-Launch-EC2-Instance)
 1. Create an IAM Role for EC2 to Access S3
    - Go to the AWS Management Console and navigate to the **IAM** service.
    - Click on "Roles" in the sidebar and then click the "Create role" button.
