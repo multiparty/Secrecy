@@ -6,10 +6,21 @@ This document is a step-by-step guide to setting up a Secrecy Server and OPEN MP
 
 This guide navigates you through how to set up an AWS environment and get the MPC vehicle up and running.
 
-### Prerequisites
+## Prerequisites
 - AWS Account
 - SSH client installed on your local machine
 
+## Table of Content
+- [1) Create VPC](#1-Create-VPC)
+- [2) Create Peering Connection](#2-Create-Peering-Connection)
+- [3) Update Route Tables](#3-Update-Route-Tables)
+- [4) Setup S3 Storage](#4-Setup-S3-Storage)
+- [5) Establish IAM](#5-Establish-IAM)
+- [6) Launch EC2 Instance](#6-Launch-EC2-Instance)
+- [7) Update Security Groups and Network ACLs](#7-Update-Security-Groups-and-Network-ACLs)
+- [8) Access Instance and Network Configuration](#8-Access-Instance-and-Network-Configuration)
+- [9) Check Configuration](#9-Check-Configuration)
+- [10) Initiate MPI program](#10-Initiate-MPI-program)
 
 ## Before You Start
 **Designate each party to roles 1, 2, and 3**
@@ -93,36 +104,36 @@ The resulting connections will form a triangle, connecting all participants.
    - Select 'Peering Connection' in the dropdown.
    - It will pop up another dropdown. Select a Peer Connection per the table below (e.g. pcx-xxx (secrecyXY))
 
-   <table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>role</th>
-      <th>destination</th>
-      <th>target</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>role-1</td>
-      <td>10.1.0.0/16, 10.2.0.0/16</td>
-      <td>secrecy12, secrecy31</td>
-    </tr>
-    <tr>
-      <td>role-2</td>
-      <td>10.0.0.0/16, 10.2.0.0/16</td>
-      <td>secrecy12, secrecy23</td>
-    </tr>
-    <tr>
-      <td>role-3</td>
-      <td>10.0.0.0/16, 10.1.0.0/16</td>
-      <td>secrecy31, secrecy23</td>
-    </tr>
-  </tbody>
-</table>
+      <table border="1" class="dataframe">
+        <thead>
+          <tr style="text-align: right;">
+            <th>role</th>
+            <th>destination</th>
+            <th>target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>role-1</td>
+            <td>10.1.0.0/16, 10.2.0.0/16</td>
+            <td>secrecy12, secrecy31</td>
+          </tr>
+          <tr>
+            <td>role-2</td>
+            <td>10.0.0.0/16, 10.2.0.0/16</td>
+            <td>secrecy12, secrecy23</td>
+          </tr>
+          <tr>
+            <td>role-3</td>
+            <td>10.0.0.0/16, 10.1.0.0/16</td>
+            <td>secrecy31, secrecy23</td>
+          </tr>
+        </tbody>
+      </table>
 
-   <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
+      <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
 
-6. Click **Save routes**.
+5. Click **Save routes**.
 
 
 ## 4) Setup S3 Storage
@@ -316,9 +327,7 @@ chmod +x ../test_aws_setup.sh
 
 ## 10) Initiate MPI program
 This step is **ONLY for role1**.
-Designate one of two parties with a dataset as an initializing party, and only the initializing party executes the following steps.
-
-You'll need to create a host file in the build directory to run the MPI process. You can create it by opening the file in a text editor:
+You'll need to ensure the host file you created in the previous step is correct. You can modify it by opening the file in a text editor:
 
 ```
 nano hostfile.txt
