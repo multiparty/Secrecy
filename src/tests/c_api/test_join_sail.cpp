@@ -245,7 +245,12 @@ int main(int argc, char** argv) {
         init_sharing();
         std::string csv_file = "./../" + filename;
         std::ifstream is2(csv_file);
-        ojson js2 = csv::decode_csv<ojson>(is2,options);
+        ojson js2_orig = csv::decode_csv<ojson>(is2,options);
+        ojson js2_header = js2_orig[0];
+        ojson js2 = ojson::array();
+        for (int i = 1; i < js2_orig.size(); i++) {
+            js2.push_back(js2_orig[i]);
+        }
         ROWS2 = static_cast<int>(js2.size());
         COLS2 = static_cast<int>(js2[0].size());
 
