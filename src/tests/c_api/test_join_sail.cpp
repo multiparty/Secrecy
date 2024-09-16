@@ -49,19 +49,6 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         }
 }
 
-std::vector<int> mergeVecs(const std::vector<int>& header1, const std::vector<int>& header2) {
-    // Create the merged vector
-    std::vector<int> merged;
-    
-    // Insert all elements from header1
-    merged.insert(merged.end(), header1.begin(), header1.end());
-    
-    // Insert elements from header2, skipping the first one
-    merged.insert(merged.end(), header2.begin() + 1, header2.end());
-
-    return merged;
-}
-
 int main(int argc, char** argv) {
     // Checking json file path
     if (argc < 3) {
@@ -228,9 +215,6 @@ int main(int argc, char** argv) {
         std::vector<int> js2_header(COLS2-1);
         MPI_Recv(js2_header.data(), COLS2-1, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
-        // Merge P1's and P2's header into an object
-        std::vector<int> merged = mergeVecs(js1_header, js2_header);
-
         // std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
             jsoncons::json entry = jsoncons::json::object();
@@ -404,10 +388,7 @@ int main(int argc, char** argv) {
             js2_header.push_back(js2_header_json[i].as<int>());
         }
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
-        
-        // Merge P2's and P1's header into an object
-        std::vector<int> merged = mergeVecs(js2_header, js1_header);
-        
+                
         for (int i = 0; i < size_to_send; i++) {
             jsoncons::json entry = jsoncons::json::object();
 
