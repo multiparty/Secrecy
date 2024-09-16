@@ -100,7 +100,6 @@ int main(int argc, char** argv) {
         std::ifstream is1(csv_file);
         ojson js1_orig = csv::decode_csv<ojson>(is1,options);
         ojson js1_header_json = js1_orig[0];
-        std::string js1_header = jsoncons::encode_json(js1_header_json);
         ojson js1 = ojson::array();
         for (int i = 1; i < js1_orig.size(); i++) {
             js1.push_back(js1_orig[i]);
@@ -218,6 +217,10 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
         
         // Send P1's header to P2
+        std::vector<int> js1_header(COLS1-1);
+        for (int i = 1; i<COLS1; i++){
+            js1_header.push_back(js1_header_json[i]);
+        }
         MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
         
         // Receive P2's header, except key col
@@ -279,7 +282,6 @@ int main(int argc, char** argv) {
         std::ifstream is2(csv_file);
         ojson js2_orig = csv::decode_csv<ojson>(is2,options);
         ojson js2_header_json = js2_orig[0];
-        std::string js2_header = jsoncons::encode_json(js2_header_json);
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
             js2.push_back(js2_orig[i]);
@@ -403,6 +405,11 @@ int main(int argc, char** argv) {
         MPI_Recv(js1_header.data(), COLS1-1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
         // Send P2's header to P1, except key col
+        std::vector<int> js2_header(COLS2-1);
+        for (int i = 1; i<COLS2; i++){
+            js2_header.push_back(js2_header_json[i]);
+        }
+
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
         
         // Merge P2's and P1's header into an object
