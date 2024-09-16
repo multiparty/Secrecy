@@ -6,10 +6,21 @@ This document is a step-by-step guide to setting up a Secrecy Server and OPEN MP
 
 This guide navigates you through how to set up an AWS environment and get the MPC vehicle up and running.
 
-### Prerequisites
+## Prerequisites
 - AWS Account
 - SSH client installed on your local machine
 
+## Table of Content
+- [1) Create VPC](#1-Create-VPC)
+- [2) Create Peering Connection](#2-Create-Peering-Connection)
+- [3) Update Route Tables](#3-Update-Route-Tables)
+- [4) Setup S3 Storage](#4-Setup-S3-Storage)
+- [5) Establish IAM](#5-Establish-IAM)
+- [6) Launch EC2 Instance](#6-Launch-EC2-Instance)
+- [7) Update Security Groups](#7-Update-Security-Groups)
+- [8) Access Instance and Network Configuration](#8-Access-Instance-and-Network-Configuration)
+- [9) Check Configuration](#9-Check-Configuration)
+- [10) Initiate MPI program](#10-Initiate-MPI-program)
 
 ## Before You Start
 **Designate each party to roles 1, 2, and 3**
@@ -41,41 +52,7 @@ This guide navigates you through how to set up an AWS environment and get the MP
   </tr>
 </table>
 
-## 2) Launch EC2 Instance
-
-<img src="https://github.com/user-attachments/assets/264abd86-06d2-44c7-bbbb-523a80ee6f86" alt="EC2 Instances" width="800">
-
-1. Name Instance as follows:
-   - role-1: secrecy1
-   - role-2: secrecy2
-   - role-3: secrecy3
-
-   
-   <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
-
-2. Select Amazon Linux
-
-3. Pick t2.micro as an instance size.
-
-4. Generate a key pair if you haven't and save the key to your local machine.
-
-   <img src="https://github.com/user-attachments/assets/da61f0c5-eeef-4df5-ad55-2a4e40936e79" alt="Key Pair" width="600">
-
-5. Hit **Edit** in Network settings, pick the VPC you've just created in step 1:
-   - role-1: secrecy1
-   - role-2: secrecy2
-   - role-3: secrecy3
-
-7. Enable **Auto-assign public IP**
-
-<table>
-  <tr>
-    <td><img src="https://github.com/user-attachments/assets/d6387771-ebb7-48d9-92e8-91e06d2c0431" alt="Network Settings" width="800"></td>
-    <td><img width="689" alt="image" src="https://github.com/user-attachments/assets/e353478a-e39b-494e-83ad-a34e6bd1f314"></td>
-  </tr>
-</table>
-
-## 3) Create VPC Peering Connection
+## 2) Create Peering Connection
 **You are making only one connection**
 Some people might get confused and try to create two connections because your instance communicates with two other instances. 
 However, you only need to create **ONE** connection, as one of your two peers will also establish a connection with you.
@@ -106,7 +83,7 @@ The resulting connections will form a triangle, connecting all participants.
       - role-3: secrecy23
 8. Click **"Actions"** at the right top, and hit **Accept request**
 
-## 4) Update Route Tables
+## 3) Update Route Tables
 
 **Ensure that everyone has created a peering connection before implementing this step**
 
@@ -127,39 +104,118 @@ The resulting connections will form a triangle, connecting all participants.
    - Select 'Peering Connection' in the dropdown.
    - It will pop up another dropdown. Select a Peer Connection per the table below (e.g. pcx-xxx (secrecyXY))
 
-   <table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>role</th>
-      <th>destination</th>
-      <th>target</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>role-1</td>
-      <td>10.1.0.0/16, 10.2.0.0/16</td>
-      <td>secrecy12, secrecy31</td>
-    </tr>
-    <tr>
-      <td>role-2</td>
-      <td>10.0.0.0/16, 10.2.0.0/16</td>
-      <td>secrecy12, secrecy23</td>
-    </tr>
-    <tr>
-      <td>role-3</td>
-      <td>10.0.0.0/16, 10.1.0.0/16</td>
-      <td>secrecy31, secrecy23</td>
-    </tr>
-  </tbody>
+      <table border="1" class="dataframe">
+        <thead>
+          <tr style="text-align: right;">
+            <th>role</th>
+            <th>destination</th>
+            <th>target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>role-1</td>
+            <td>10.1.0.0/16, 10.2.0.0/16</td>
+            <td>secrecy12, secrecy31</td>
+          </tr>
+          <tr>
+            <td>role-2</td>
+            <td>10.0.0.0/16, 10.2.0.0/16</td>
+            <td>secrecy12, secrecy23</td>
+          </tr>
+          <tr>
+            <td>role-3</td>
+            <td>10.0.0.0/16, 10.1.0.0/16</td>
+            <td>secrecy31, secrecy23</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
+
+5. Click **Save routes**.
+
+
+## 4) Setup S3 Storage
+This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](#6-Launch-EC2-Instance)
+
+1. Create an S3 Bucket for User Input
+   - Navigate to the S3 service.
+   - Click on the "Create bucket" button.
+   - Enter a name for your bucket
+   
+   | You are..| Bucket Name    |
+   |----------|----------------|
+   | role-1   | secrecy-bucket1|
+   | role-2   | secrecy-bucket2|
+
+   - Click "Create bucket."
+
+2. Search the bucket in the s3 dashboard and click on the name
+3. Upload your csv file and inform role1 of your file name if you are role2.
+
+## 5) Establish IAM
+This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](#6-Launch-EC2-Instance)
+1. Create an IAM Role for EC2 to Access S3
+   - Go to the AWS Management Console and navigate to the **IAM** service.
+   - Click on "Roles" in the sidebar and then click the "Create role" button.
+   - Choose **AWS service** and then **EC2** in the "Service or use case" dropdown.
+   - Click "Next"
+
+2. Attach S3 Full Access Policy
+   - In the permissions policies, search for `AmazonS3FullAccess`.
+   - Select the checkbox next to `AmazonS3FullAccess` to grant full access to S3.
+   - Click "Next"
+
+3. Review and Create Role
+   - Enter a name for your role
+     
+      | You are..| Name    |
+      |----------|---------|
+      | role-1   | secrecy1|
+      | role-2   | secrecy2|
+     
+   - Leave other variables untouched.
+   - Click "Create role."
+
+
+## 6) Launch EC2 Instance
+
+<img src="https://github.com/user-attachments/assets/264abd86-06d2-44c7-bbbb-523a80ee6f86" alt="EC2 Instances" width="800">
+
+1. Name Instance as follows:
+   - role-1: secrecy1
+   - role-2: secrecy2
+   - role-3: secrecy3
+
+   
+   <img width="700" alt="image" src="https://github.com/user-attachments/assets/69ae4a3a-afef-487b-a447-9a478fd80d79">
+
+2. Select Amazon Linux
+
+3. Pick t2.micro as an instance size.
+
+4. Generate a key pair if you haven't and save the key to your local machine.
+
+   <img src="https://github.com/user-attachments/assets/da61f0c5-eeef-4df5-ad55-2a4e40936e79" alt="Key Pair" width="600">
+
+5. Hit **Edit** in Network settings, pick the VPC you've just created in step 1:
+   - role-1: secrecy1
+   - role-2: secrecy2
+   - role-3: secrecy3
+
+6. Enable **Auto-assign public IP**
+
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/d6387771-ebb7-48d9-92e8-91e06d2c0431" alt="Network Settings" width="800"></td>
+    <td><img width="689" alt="image" src="https://github.com/user-attachments/assets/e353478a-e39b-494e-83ad-a34e6bd1f314"></td>
+  </tr>
 </table>
 
-   <img width="800" alt="image" src="https://github.com/user-attachments/assets/6da851d3-17b4-4bf3-b27b-de6a4a97f3c8">
 
-6. Click **Save routes**.
-
-## 5) Update Security Groups and Network ACLs
-1. Go to the EC2 Dashboard.
+## 7) Update Security Groups
+1. Navigate to the **EC2 Dashboard** in the AWS Management Console.
 2. Select your instance, choose the **Security** tab, and hit the pop-up link.
    <img width="800" alt="image" src="https://github.com/user-attachments/assets/48931b07-9a17-4a8f-bfbb-81e7ff2f96f7">
 3. This will take you to Security Groups Dashboard. Click on the Security Group ID
@@ -178,7 +234,15 @@ The resulting connections will form a triangle, connecting all participants.
        -  10.0.0.0/16
        -  10.1.0.0/16
 
-## 6) Access Instance and Network Configuration
+
+7. Attach IAM Role to EC2 Instance **(Only if you are role 1 or role2)**
+   - Navigate back to the **EC2 Dashboard** in the AWS Management Console.
+   - Select your EC2 instance.
+   - Click on "Actions" > "Security" > "Modify IAM Role."
+   - Choose the newly created IAM role (`EC2-S3-Access-Role`) and click "Update IAM Role."
+
+
+## 8) Access Instance and Network Configuration
 
 With these steps so far, you should be able to access the EC2 instance and are ready to launch the Secrecy app.
 
@@ -250,50 +314,6 @@ chmod 600 ~/.ssh/id_rsa
 chmod 600 ~/.ssh/config
 ```
 
-## 7) Setup S3 Storage
-This step applies **ONLY to role1 and role2**. All setup jobs are done for role3 at this point. For role3, please skip to [Check Configuration](#9-check-configuration)
-
-1. Create an S3 Bucket for User Input
-   - Navigate to the S3 service.
-   - Click on the "Create bucket" button.
-   - Enter a name for your bucket
-   
-   | You are..| Bucket Name    |
-   |----------|----------------|
-   | role-1   | secrecy-bucket1|
-   | role-2   | secrecy-bucket2|
-
-   - Click "Create bucket."
-
-## 8) Establish IAM
-1. Create an IAM Role for EC2 to Access S3
-   - Go to the AWS Management Console and navigate to the **IAM** service.
-   - Click on "Roles" in the sidebar and then click the "Create role" button.
-   - Choose **AWS service** and then **EC2** in the "Service or use case" dropdown.
-   - Click "Next"
-
-2. Attach S3 Full Access Policy
-   - In the permissions policies, search for `AmazonS3FullAccess`.
-   - Select the checkbox next to `AmazonS3FullAccess` to grant full access to S3.
-   - Click "Next"
-
-3. Review and Create Role
-   - Enter a name for your role
-     
-      | You are..| Name    |
-      |----------|---------|
-      | role-1   | secrecy1|
-      | role-2   | secrecy2|
-     
-   - Leave other variables untouched.
-   - Click "Create role."
-
-4. Attach IAM Role to EC2 Instance
-   - Go to the **EC2 Dashboard** in the AWS Management Console.
-   - Select your EC2 instance.
-   - Click on "Actions" > "Security" > "Modify IAM Role."
-   - Choose the newly created IAM role (`EC2-S3-Access-Role`) and click "Update IAM Role."
-
 ## 9) Check Configuration
 
 1. Give permission to execute the shell script
@@ -310,9 +330,7 @@ chmod +x ../test_aws_setup.sh
 
 ## 10) Initiate MPI program
 This step is **ONLY for role1**.
-Designate one of two parties with a dataset as an initializing party, and only the initializing party executes the following steps.
-
-You'll need to create a host file in the build directory to run the MPI process. You can create it by opening the file in a text editor:
+You'll need to ensure the host file you created in the previous step is correct. You can modify it by opening the file in a text editor:
 
 ```
 nano hostfile.txt
