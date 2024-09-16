@@ -219,7 +219,7 @@ int main(int argc, char** argv) {
         // Send P1's header to P2
         std::vector<int> js1_header(COLS1-1);
         for (int i = 1; i<COLS1; i++){
-            js1_header.push_back(js1_header_json[i]);
+            js1_header.push_back(js1_header_json[i].as<int>());
         }
         MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
         
@@ -407,7 +407,7 @@ int main(int argc, char** argv) {
         // Send P2's header to P1, except key col
         std::vector<int> js2_header(COLS2-1);
         for (int i = 1; i<COLS2; i++){
-            js2_header.push_back(js2_header_json[i]);
+            js2_header.push_back(js2_header_json[i].as<int>());
         }
 
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
