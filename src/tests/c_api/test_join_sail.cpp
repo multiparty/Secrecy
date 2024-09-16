@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
         
         // Send P1's header to P2
-        std::vector<int> js1_header(COLS1-1);
+        std::vector<int> js1_header;
         for (int i = 1; i<COLS1; i++){
              std::cout <<js1_header_json[i].as<int>();
             js1_header.push_back(js1_header_json[i].as<int>());
@@ -404,19 +404,20 @@ int main(int argc, char** argv) {
         // Receive P1's header from P1, except key col
         std::vector<int> js1_header(COLS1-1);
         MPI_Recv(js1_header.data(), COLS1-1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        std::cout << "Header1 done";
+        std::cout << "Header1 Received" << std::endl;
+
         // Send P2's header to P1, except key col
-        std::vector<int> js2_header(COLS2-1);
+        std::vector<int> js2_header;
         for (int i = 1; i<COLS2; i++){
             js2_header.push_back(js2_header_json[i].as<int>());
         }
 
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
-        std::cout << "Header2 done";
+        std::cout << "Header2 Received" << std::endl;
         
         // Merge P2's and P1's header into an object
         std::vector<int> merged = mergeVecs(js2_header, js1_header);
-        std::cout << "Header";
+        std::cout << "Headers merged";
         for (int value : merged) {
             std::cout << value << " ";
         }
