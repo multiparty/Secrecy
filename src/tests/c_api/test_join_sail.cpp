@@ -219,6 +219,7 @@ int main(int argc, char** argv) {
         // Send P1's header to P2
         std::vector<int> js1_header(COLS1-1);
         for (int i = 1; i<COLS1; i++){
+             std::cout <<js1_header_json[i].as<int>();
             js1_header.push_back(js1_header_json[i].as<int>());
         }
         MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
