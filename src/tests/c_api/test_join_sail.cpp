@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
         ojson js1_header = js1_orig[0];
         ojson js1 = ojson::array();
         for (int i = 1; i < js1_orig.size(); i++) {
-            js1.push_back(js1_orig[i])
+            js1.push_back(js1_orig[i]);
         }
         
         ROWS1 = static_cast<int>(js1.size());
