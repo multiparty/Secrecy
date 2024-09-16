@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
             // Index/Key Val
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
-            entry[js1_header[0].as<int>()] = index_val;
+            entry[js1_header[0]] = index_val;
             // std::cout << "[" << index_val;
 
             // Build Own Table
@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
             for(int j = 1; j < COLS1; j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
-                entry[js1_header[j].as<int>()] = curr_val;
+                entry[js1_header[j]] = curr_val;
             }
 
             // Their Table from P2
@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
             for (size_t j = 0; j < rec_vals.size(); ++j) {
                int curr_val = rec_vals[j];
-               entry[js2_header[j].as<int>()] = curr_val;
+               entry[js2_header[j]] = curr_val;
             }
 
             // Add the entry to the output JSON array
@@ -414,7 +414,7 @@ int main(int argc, char** argv) {
             // Index/Key Val
             int t2 = t2_index[i];
             long long index_val = js2[t2][0].as<int>();
-            entry[js2_header[0].as<int>()] = index_val;
+            entry[js2_header[0]] = index_val;
             std::cout << "[" << index_val;
 
             // Build Own Table
@@ -422,7 +422,7 @@ int main(int argc, char** argv) {
             for(int j = 1; j < COLS2; j++){
                 int curr_val = js2[t2][j].as<int>();
                 send_vals[j-1] = curr_val;
-                entry[js2_header[j].as<int>()] = curr_val;
+                entry[js2_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             // Send to P1
@@ -433,7 +433,7 @@ int main(int argc, char** argv) {
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (size_t j = 0; j < rec_vals.size(); j++){
                 int curr_val = rec_vals[j];
-                entry[js1_header[j].as<int>()] = curr_val;
+                entry[js1_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
