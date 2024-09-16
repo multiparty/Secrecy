@@ -414,6 +414,7 @@ int main(int argc, char** argv) {
         
         // Merge P2's and P1's header into an object
         std::vector<int> merged = mergeVecs(js2_header, js1_header);
+        std::cout << "Header";
         for (int value : merged) {
             std::cout << value << " ";
         }
