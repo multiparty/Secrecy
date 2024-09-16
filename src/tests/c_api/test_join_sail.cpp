@@ -10,6 +10,7 @@ using namespace jsoncons;
 #define INIT_TAG 191
 #define SHARE_TAG 193
 #define RESULT_TAG 197
+#define HEADER_TAG 199
 
 void download_from_s3(int rank, const std::string& filename) {
     std::string rankStr = std::to_string(rank);
@@ -46,6 +47,19 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         } else {
             std::cerr << "Error uploading file. Command returned: " << result << std::endl;
         }
+}
+
+std::vector<int> mergeVecs(const std::vector<int>& header1, const std::vector<int>& header2) {
+    // Create the merged vector
+    std::vector<int> merged;
+    
+    // Insert all elements from header1
+    merged.insert(merged.end(), header1.begin(), header1.end());
+    
+    // Insert elements from header2, skipping the first one
+    merged.insert(merged.end(), header2.begin() + 1, header2.end());
+
+    return merged;
 }
 
 int main(int argc, char** argv) {
@@ -201,6 +215,23 @@ int main(int argc, char** argv) {
 
         // JSON object to hold the results
         jsoncons::json output_json = jsoncons::json::array();
+        
+        // Send P1's header to P2
+        MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
+        
+        // Receive P2's header, except key col
+        std::vector<int> js2_header(COLS2-1);
+        MPI_Recv(js2_header.data(), COLS2-1, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+        // Merge P1's and P2's header into an object
+        std::vector<int> merged = mergeVecs(js1_header, js2_header);
+        for (int value : merged) {
+            std::cout << value << " ";
+        }
+        std::cout << std::endl;
+
+        // Append it to output_json
+        output_json.push_back(merged);
 
         // std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
@@ -362,9 +393,26 @@ int main(int argc, char** argv) {
         MPI_Recv(t2_index.data(), size_to_send, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // JSON object to hold the results
+        std::cout << "/// Joined Table ///" << std::endl;
         jsoncons::json output_json = jsoncons::json::array();
 
-        std::cout << "/// Joined Table ///" << std::endl;
+        // Receive P1's header from P1, except key col
+        std::vector<int> js1_header(COLS1-1);
+        MPI_Recv(js1_header.data(), COLS1-1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+        // Send P2's header to P1, except key col
+        MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
+        
+        // Merge P2's and P1's header into an object
+        std::vector<int> merged = mergeVecs(js2_header, js1_header);
+        for (int value : merged) {
+            std::cout << value << " ";
+        }
+        std::cout << std::endl;
+        
+        // Append it to output_json
+        output_json.push_back(merged)
+
         for (int i = 0; i < size_to_send; i++) {
             jsoncons::json entry = jsoncons::json::object();
 
