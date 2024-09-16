@@ -85,8 +85,12 @@ int main(int argc, char** argv) {
         std::string csv_file = "./../" + filename;
         std::ifstream is1(csv_file);
         ojson js1_orig = csv::decode_csv<ojson>(is1,options);
-        ojson js1_header = js1_orig["header"];
-        ojson js1 = js1_orig["body"];
+        ojson js1_header = js1_orig[0];
+        ojson js1 = ojson::array();
+        for (int i = 1; i < js1_orig.size(); i++) {
+            js1.push_back(js1_orig[i])
+        }
+        
         ROWS1 = static_cast<int>(js1.size());
         COLS1 = static_cast<int>(js1[0].size());
         //////// Send ROWS1 and COLS1 to P2 and 3
