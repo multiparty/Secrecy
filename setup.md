@@ -151,6 +151,9 @@ This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launc
 
    - Click "Create bucket."
 
+2. Search the bucket in the s3 dashboard and click on the name
+3. Upload your csv file and inform role1 of your file name if you are role2.
+
 ## 5) Establish IAM
 This step applies **ONLY to role1 and role2**. If you are role 3, skip to [Launch EC2 Instance](#6-Launch-EC2-Instance)
 1. Create an IAM Role for EC2 to Access S3
