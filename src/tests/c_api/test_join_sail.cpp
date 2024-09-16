@@ -403,7 +403,7 @@ int main(int argc, char** argv) {
         // Receive P1's header from P1, except key col
         std::vector<int> js1_header(COLS1-1);
         MPI_Recv(js1_header.data(), COLS1-1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        
+        std::cout << "Header1 done";
         // Send P2's header to P1, except key col
         std::vector<int> js2_header(COLS2-1);
         for (int i = 1; i<COLS2; i++){
@@ -411,6 +411,7 @@ int main(int argc, char** argv) {
         }
 
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
+        std::cout << "Header2 done";
         
         // Merge P2's and P1's header into an object
         std::vector<int> merged = mergeVecs(js2_header, js1_header);
