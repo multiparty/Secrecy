@@ -234,16 +234,16 @@ int main(int argc, char** argv) {
             }
 
             // Their Table from P2
-            std::vector<int> rec_vals(COLS2-1);
+            std::vector<int> rec_vals(COLS2);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            
-            // Send to P2
-            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
-            for (size_t j = 0; j < rec_vals.size(); ++j) {
+            for (size_t j = 1; j < rec_vals.size(); ++j) {
                int curr_val = rec_vals[j];
-               entry[std::to_string(js2_header[j+1])] = curr_val;
+               entry[std::to_string(js2_header[j])] = curr_val;
             }
 
+            // Send to P2
+            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
+            
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
@@ -409,10 +409,10 @@ int main(int argc, char** argv) {
             std::cout << "[" << index_val;
 
             // Build Own Table
-            std::vector<int> send_vals(COLS2-1);
-            for(int j = 1; j < js2_header.size(); j++){
+            std::vector<int> send_vals(COLS2);
+            for(int j = 0; j < js2_header.size(); j++){
                 int curr_val = js2[t2][j].as<int>();
-                send_vals[j-1] = curr_val;
+                send_vals[j] = curr_val;
                 entry[std::to_string(js2_header[j])] = curr_val;
                 std::cout << ", " << curr_val;
             }
