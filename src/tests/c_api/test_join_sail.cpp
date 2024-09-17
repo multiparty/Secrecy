@@ -111,11 +111,17 @@ int main(int argc, char** argv) {
         std::string csv_file = "./../" + filename;
         std::ifstream is1(csv_file);
         ojson js1_orig = csv::decode_csv<ojson>(is1,options);
+
+        // Enumerate Headers
         ojson js1_header_json = js1_orig[0];
+        for (int i = 0; i < js1_header_json.size(); i++) {
+            js1_header_json[i] = encodeStrToInt(js1_header_json[i].as<std::string>());
+        }
+
+        // Organize body
         ojson js1 = ojson::array();
         for (int i = 1; i < js1_orig.size(); i++) {
-            int num = encodeStrToInt(js1_orig[i].as<std::string>()); // Convert String to integer
-            js1.push_back(num);
+            js1.push_back(js1_orig[i]);
         }
         
         ROWS1 = static_cast<int>(js1.size());
@@ -285,7 +291,14 @@ int main(int argc, char** argv) {
         std::string csv_file = "./../" + filename;
         std::ifstream is2(csv_file);
         ojson js2_orig = csv::decode_csv<ojson>(is2,options);
+        
+        // Enumerate Headers
         ojson js2_header_json = js2_orig[0];
+        for (int i = 0; i < js2_header_json.size(); i++) {
+            js2_header_json[i] = encodeStrToInt(js2_header_json[i].as<std::string>());
+        }
+
+        // Organize body
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
             std::cout << js2_orig[i] << std::endl;
