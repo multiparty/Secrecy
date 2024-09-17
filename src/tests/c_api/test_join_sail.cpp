@@ -455,7 +455,6 @@ int main(int argc, char** argv) {
             js2_header.push_back(currHeader);
 
             std::cout << currHeader;
-            if (i != js2_header_toSend.size()-1){
             std::cout << ", ";
             }
         }
