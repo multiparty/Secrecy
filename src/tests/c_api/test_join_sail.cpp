@@ -94,7 +94,8 @@ int main(int argc, char** argv) {
         ojson js1_header_json = js1_orig[0];
         ojson js1 = ojson::array();
         for (int i = 1; i < js1_orig.size(); i++) {
-            js1.push_back(js1_orig[i]);
+            int num = std::stoi(js1_orig[i]); // Convert String to integer
+            js1.push_back(num);
         }
         
         ROWS1 = static_cast<int>(js1.size());
@@ -267,7 +268,8 @@ int main(int argc, char** argv) {
         ojson js2_header_json = js2_orig[0];
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
-            js2.push_back(js2_orig[i]);
+            int num = std::stoi(js2_orig[i]); // Convert String to integer
+            js2.push_back(num);
         }
         ROWS2 = static_cast<int>(js2.size());
         COLS2 = static_cast<int>(js2[0].size());
