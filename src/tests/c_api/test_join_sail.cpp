@@ -247,7 +247,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> js1_header;
         for(size_t i = 0; i<js1_header_toSend.size(); i++){
             std::string currHeader = decodeIntToString(js1_header_toSend[i]);
-            js1_header.push_back(decodeIntToString(currHeader));
+            js1_header.push_back(currHeader);
         }
         
         // Receive P2's header and convert to string
@@ -256,7 +256,8 @@ int main(int argc, char** argv) {
         
         std::vector<std::string> js2_header;
         for(size_t i = 0; i<js2_header_toReceive.size(); i++){
-            js2_header.push_back(decodeIntToString(js2_header_toReceive[i]));
+            std::string curr_header = decodeIntToString(js2_header_toReceive[i])
+            js2_header.push_back(curr_header);
         }
 
         // Construct json for the body part
@@ -435,7 +436,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> js1_header;
         for(size_t i = 0; i<js1_header_toReceive.size(); i++){
             std::string currHeader = decodeIntToString(js1_header_toSend[i]);
-            js1_header.push_back(decodeIntToString(currHeader));
+            js1_header.push_back(currHeader);
         }
 
         // Send P2's header to P1
