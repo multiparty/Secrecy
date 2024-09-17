@@ -114,13 +114,13 @@ int main(int argc, char** argv) {
 
         // Enumerate Headers
         ojson js1_header_json = js1_orig[0];
-        for (int i = 0; i < js1_header_json.size(); i++) {
+        for (size_t i = 0; i < js1_header_json.size(); i++) {
             js1_header_json[i] = encodeStrToInt(js1_header_json[i].as<std::string>());
         }
 
         // Organize body
         ojson js1 = ojson::array();
-        for (int i = 1; i < js1_orig.size(); i++) {
+        for (size_t i = 1; i < js1_orig.size(); i++) {
             js1.push_back(js1_orig[i]);
         }
         
@@ -243,8 +243,8 @@ int main(int argc, char** argv) {
         }
         MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
 
-        for(int i = 0; i<js1_header.size(); i++){
-            js1_header[i] = decodeIntToString(js1_header[i])
+        for(size_t i = 0; i<js1_header.size(); i++){
+            js1_header[i] = decodeIntToString(js1_header[i].as<long long>())
         }
         
         // Receive P2's header, except key col
