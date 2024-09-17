@@ -384,11 +384,11 @@ int main(int argc, char** argv) {
 
         // Send P2's header to P1, except key col
         std::vector<int> js2_header;
-        std::cout << "[" << index_val;
+        std::cout << "[";
         for (int i = 0; i<COLS2; i++){
             int curr = js2_header_json[i].as<int>();
             js2_header.push_back(curr);
-            std::cout << curr<< ", "
+            std::cout << curr<< ", ";
         }
         std::cout << "]" << std::endl;
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
