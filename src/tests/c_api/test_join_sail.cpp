@@ -10,6 +10,7 @@ using namespace jsoncons;
 #define INIT_TAG 191
 #define SHARE_TAG 193
 #define RESULT_TAG 197
+#define HEADER_TAG 199
 
 void download_from_s3(int rank, const std::string& filename) {
     std::string rankStr = std::to_string(rank);
@@ -28,17 +29,22 @@ void download_from_s3(int rank, const std::string& filename) {
 void upload_to_s3(int rank, json output_json, const std::string& filename){
         // Convert the rank and filename to Strings
         std::string rankStr = std::to_string(rank+1);
-        std::ofstream json_file(filename);
-        if(!json_file.is_open()){
+        std::ofstream csvFile(filename);
+        if(!csvFile.is_open()){
             std::cerr << "Error openiing file: " << filename << std::endl;
             return;
         }
         
-        // Copy the content to output json file
-        json_file << pretty_print(output_json);
-        json_file.close();
+        // Convert the JSON to CSV
+        try{
+        csv::encode_csv(output_json, csvFile);
+        } catch(const std::exception& e){
+            std::cerr << "Error Converting JSON to CSV: " << e.what() << std::endl;
+        }
 
-        // Run the command
+        csvFile.close();
+
+        // Upload the csv file
         std::string awsUploadCommand = "aws s3 cp " + filename + " s3://secrecy-bucket" + rankStr +"/";
         int result = system(awsUploadCommand.c_str());
         if (result == 0) {
@@ -73,7 +79,7 @@ int main(int argc, char** argv) {
     const int succ = get_succ();  // Checks initialization and returns an assigned rank/index of successor party
     
     // Common csv option for party1 and 2
-    auto options = csv::csv_options{}.assume_header(false).mapping_kind(csv::csv_mapping_kind::n_rows);
+    auto options = csv::csv_options{}.assume_header(true).mapping_kind(csv::csv_mapping_kind::n_rows);
     if (rank == 0) {     // P1: Party-1
         std::string filename = argv[1];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
@@ -84,7 +90,13 @@ int main(int argc, char** argv) {
         init_sharing();  // Runs sodium_init and checks if itinialization of sodium was successful
         std::string csv_file = "./../" + filename;
         std::ifstream is1(csv_file);
-        ojson js1 = csv::decode_csv<ojson>(is1,options);
+        ojson js1_orig = csv::decode_csv<ojson>(is1,options);
+        ojson js1_header_json = js1_orig[0];
+        ojson js1 = ojson::array();
+        for (int i = 1; i < js1_orig.size(); i++) {
+            js1.push_back(js1_orig[i]);
+        }
+        
         ROWS1 = static_cast<int>(js1.size());
         COLS1 = static_cast<int>(js1[0].size());
         //////// Send ROWS1 and COLS1 to P2 and 3
@@ -195,7 +207,19 @@ int main(int argc, char** argv) {
 
         // JSON object to hold the results
         jsoncons::json output_json = jsoncons::json::array();
-
+        
+        // Send P1's header to P2
+        std::vector<int> js1_header;
+        for (int i = 0; i<COLS1; i++){
+             std::cout <<js1_header_json[i].as<int>();
+            js1_header.push_back(js1_header_json[i].as<int>());
+        }
+        MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
+        
+        // Receive P2's header, except key col
+        std::vector<int> js2_header(COLS2);
+        MPI_Recv(js2_header.data(), COLS2, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
         // std::cout << "/// Joined Table ///" << std::endl;
         for (int i = 0; i < size_to_receive; i++) {
             jsoncons::json entry = jsoncons::json::object();
@@ -203,32 +227,32 @@ int main(int argc, char** argv) {
             // Index/Key Val
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
-            entry["index_val"] = index_val;
+            entry[std::to_string(js1_header[0])] = index_val;
             // std::cout << "[" << index_val;
 
             // Build Own Table
-            std::vector<int> send_vals(COLS1-1);
-            for(int j = 1; j < COLS1; j++){
+            std::vector<int> send_vals(COLS1);
+            for(int j = 0; j < js1_header.size(); j++){
                 int curr_val = js1[t1][j].as<int>();
-                send_vals[j-1] = curr_val;
-                entry["own_val" + std::to_string(j)] = curr_val;
+                send_vals[j] = curr_val;
+                entry[std::to_string(js1_header[j])] = curr_val;
             }
 
             // Their Table from P2
-            std::vector<int> rec_vals(COLS2-1);
+            std::vector<int> rec_vals(COLS2);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            
-            // Send to P2
-            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
-            for (size_t i = 0; i < rec_vals.size(); ++i) {
-               int curr_val = rec_vals[i];
-               entry["their_val" + std::to_string(i)] = curr_val;
+            for (size_t j = 1; j < rec_vals.size(); ++j) {
+               int curr_val = rec_vals[j];
+               entry[std::to_string(js2_header[j])] = curr_val;
             }
 
+            // Send to P2
+            MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD);
+            
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
-        upload_to_s3(0, output_json, "output.json");
+        upload_to_s3(0, output_json, "output.csv");
     } else if (rank == 1) {  // P2
         std::string filename = argv[2];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
@@ -239,7 +263,12 @@ int main(int argc, char** argv) {
         init_sharing();
         std::string csv_file = "./../" + filename;
         std::ifstream is2(csv_file);
-        ojson js2 = csv::decode_csv<ojson>(is2,options);
+        ojson js2_orig = csv::decode_csv<ojson>(is2,options);
+        ojson js2_header_json = js2_orig[0];
+        ojson js2 = ojson::array();
+        for (int i = 1; i < js2_orig.size(); i++) {
+            js2.push_back(js2_orig[i]);
+        }
         ROWS2 = static_cast<int>(js2.size());
         COLS2 = static_cast<int>(js2[0].size());
 
@@ -351,41 +380,65 @@ int main(int argc, char** argv) {
         MPI_Recv(t2_index.data(), size_to_send, MPI_INT, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // JSON object to hold the results
+        std::cout << "/// Joined Table ///" << std::endl;
         jsoncons::json output_json = jsoncons::json::array();
 
-        std::cout << "/// Joined Table ///" << std::endl;
+        // Receive P1's header from P1, except key col
+        std::vector<int> js1_header(COLS1);
+        MPI_Recv(js1_header.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        // Send P2's header to P1, except key col
+        std::cout << "[";
+        std::vector<int> js2_header;
+        for (int i = 0; i<COLS2; i++){
+            int curr = js2_header_json[i].as<int>();
+            js2_header.push_back(curr);
+            std::cout << curr << ", ";
+        }
+                
+        // Print P1 header
+        for (int i = 1; i< js1_header.size(); i++){
+            int curr = js1_header[i];
+            std::cout << curr;
+            if (i != js1_header.size()-1){
+                std::cout << ", ";
+            }
+        }
+        std::cout << "]" << std::endl;
+        MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
+                
         for (int i = 0; i < size_to_send; i++) {
             jsoncons::json entry = jsoncons::json::object();
 
             // Index/Key Val
             int t2 = t2_index[i];
             long long index_val = js2[t2][0].as<int>();
-            entry["index_val"] = index_val;
+            entry[std::to_string(js2_header[0])] = index_val;
             std::cout << "[" << index_val;
 
             // Build Own Table
-            std::vector<int> send_vals(COLS2-1);
-            for(int j = 1; j < COLS2; j++){
+            std::vector<int> send_vals(COLS2);
+            for(int j = 1; j < js2_header.size(); j++){
                 int curr_val = js2[t2][j].as<int>();
-                send_vals[j-1] = curr_val;
-                entry["own_val" + std::to_string(j)] = curr_val;
+                send_vals[j] = curr_val;
+                entry[std::to_string(js2_header[j])] = curr_val;
                 std::cout << ", " << curr_val;
             }
             // Send to P1
             MPI_Send(send_vals.data(), send_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD);
 
             // Their table from P1
-            std::vector<int> rec_vals(COLS1-1);
+            std::vector<int> rec_vals(COLS1);
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            for (size_t i = 0; i < rec_vals.size(); i++){
-                int curr_val = rec_vals[i];
-                entry["their_val" + std::to_string(i)] = curr_val;
+            for (size_t j = 1; j < rec_vals.size(); j++){
+                int curr_val = rec_vals[j];
+                entry[std::to_string(js1_header[j])] = curr_val;
                 std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
             output_json.push_back(entry);
         }
-        upload_to_s3(1, output_json, "output.json");
+        upload_to_s3(1, output_json, "output.csv");
     } else {  // P3
 
         //////// Receive ROWS1 and COLS1 from P1
