@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 #include "../test-utils.h"
@@ -54,6 +55,25 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         }
 }
 
+unsigned long long encodeStrToInt(const std::string& str){
+    unsigned long long result = 0;
+    for (char c : str){
+        result = result * 256 + static_cast<unsigned long long>(c);
+    }
+    return result;
+}
+
+std::string decodeIntToString(unsigned long long encoded){
+    std::string decoded;
+    while (encoded > 0){
+        char c = static_cast<char>(encoded % 256);
+        decoded.insert(decoded.begin(), c);
+        encoded /= 256;
+    }
+    return decoded;
+}
+
+
 int main(int argc, char** argv) {
     // Checking json file path
     if (argc < 3) {
@@ -91,9 +111,16 @@ int main(int argc, char** argv) {
         std::string csv_file = "./../" + filename;
         std::ifstream is1(csv_file);
         ojson js1_orig = csv::decode_csv<ojson>(is1,options);
+
+        // Enumerate Headers
         ojson js1_header_json = js1_orig[0];
+        for (size_t i = 0; i < js1_header_json.size(); i++) {
+            js1_header_json[i] = encodeStrToInt(js1_header_json[i].as<std::string>());
+        }
+
+        // Organize body
         ojson js1 = ojson::array();
-        for (int i = 1; i < js1_orig.size(); i++) {
+        for (size_t i = 1; i < js1_orig.size(); i++) {
             js1.push_back(js1_orig[i]);
         }
         
@@ -209,33 +236,45 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
         
         // Send P1's header to P2
-        std::vector<int> js1_header;
+        std::vector<long long> js1_header_toSend;
         for (int i = 0; i<COLS1; i++){
-             std::cout <<js1_header_json[i].as<int>();
-            js1_header.push_back(js1_header_json[i].as<int>());
+            long long curr_header = js1_header_json[i].as<long long>();
+            js1_header_toSend.push_back(curr_header);
         }
-        MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
+        MPI_Send(js1_header_toSend.data(), js1_header_toSend.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
+
+        // Decode own header to string
+        std::vector<std::string> js1_header;
+        for(size_t i = 0; i<js1_header_toSend.size(); i++){
+            std::string currHeader = decodeIntToString(js1_header_toSend[i]);
+            js1_header.push_back(currHeader);
+        }
         
-        // Receive P2's header, except key col
-        std::vector<int> js2_header(COLS2);
-        MPI_Recv(js2_header.data(), COLS2, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // Receive P2's header and convert to string
+        std::vector<long long> js2_header_toReceive(COLS2);
+        MPI_Recv(js2_header_toReceive.data(), COLS2, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
-        // std::cout << "/// Joined Table ///" << std::endl;
+        std::vector<std::string> js2_header;
+        for(size_t i = 0; i<js2_header_toReceive.size(); i++){
+            std::string curr_header = decodeIntToString(js2_header_toReceive[i]);
+            js2_header.push_back(curr_header);
+        }
+
+        // Construct json for the body part
         for (int i = 0; i < size_to_receive; i++) {
             jsoncons::json entry = jsoncons::json::object();
             
             // Index/Key Val
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
-            entry[std::to_string(js1_header[0])] = index_val;
-            // std::cout << "[" << index_val;
+            entry[js1_header[0]] = index_val;
 
             // Build Own Table
             std::vector<int> send_vals(COLS1);
             for(int j = 0; j < js1_header.size(); j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j] = curr_val;
-                entry[std::to_string(js1_header[j])] = curr_val;
+                entry[js1_header[j]] = curr_val;
             }
 
             // Their Table from P2
@@ -243,7 +282,7 @@ int main(int argc, char** argv) {
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (size_t j = 1; j < rec_vals.size(); ++j) {
                int curr_val = rec_vals[j];
-               entry[std::to_string(js2_header[j])] = curr_val;
+               entry[js2_header[j]] = curr_val;
             }
 
             // Send to P2
@@ -264,7 +303,14 @@ int main(int argc, char** argv) {
         std::string csv_file = "./../" + filename;
         std::ifstream is2(csv_file);
         ojson js2_orig = csv::decode_csv<ojson>(is2,options);
+        
+        // Enumerate Headers
         ojson js2_header_json = js2_orig[0];
+        for (int i = 0; i < js2_header_json.size(); i++) {
+            js2_header_json[i] = encodeStrToInt(js2_header_json[i].as<std::string>());
+        }
+
+        // Organize body
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
             js2.push_back(js2_orig[i]);
@@ -383,37 +429,53 @@ int main(int argc, char** argv) {
         std::cout << "/// Joined Table ///" << std::endl;
         jsoncons::json output_json = jsoncons::json::array();
 
-        // Receive P1's header from P1, except key col
-        std::vector<int> js1_header(COLS1);
-        MPI_Recv(js1_header.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        // Send P2's header to P1, except key col
-        std::cout << "[";
-        std::vector<int> js2_header;
-        for (int i = 0; i<COLS2; i++){
-            int curr = js2_header_json[i].as<int>();
-            js2_header.push_back(curr);
-            std::cout << curr << ", ";
+        // Receive P1's header and convert to string
+        std::vector<long long> js1_header_toReceive(COLS1);
+        MPI_Recv(js1_header_toReceive.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        
+        std::vector<std::string> js1_header;
+        for(size_t i = 0; i<js1_header_toReceive.size(); i++){
+            std::string currHeader = decodeIntToString(js1_header_toReceive[i]);
+            js1_header.push_back(currHeader);
         }
-                
+
+        // Send P2's header to P1
+        std::vector<long long> js2_header_toSend;
+        for (int i = 0; i<COLS2; i++){
+            long long curr_header = js2_header_json[i].as<long long>();
+            js2_header_toSend.push_back(curr_header);
+        }
+        MPI_Send(js2_header_toSend.data(), js2_header_toSend.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
+        
+        // Decode own header to string
+        std::cout << "[";
+        std::vector<std::string> js2_header;
+        for(size_t i = 0; i<js2_header_toSend.size(); i++){
+            std::string currHeader = decodeIntToString(js2_header_toSend[i]);
+            js2_header.push_back(currHeader);
+
+            std::cout << currHeader << ", ";
+        }
+
         // Print P1 header
-        for (int i = 1; i< js1_header.size(); i++){
-            int curr = js1_header[i];
+        for (size_t i = 1; i< js1_header.size(); i++){
+            std::string curr = js1_header[i];
             std::cout << curr;
             if (i != js1_header.size()-1){
                 std::cout << ", ";
             }
         }
+
         std::cout << "]" << std::endl;
-        MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
-                
+
+        // Construct json for the body part
         for (int i = 0; i < size_to_send; i++) {
             jsoncons::json entry = jsoncons::json::object();
 
             // Index/Key Val
             int t2 = t2_index[i];
             long long index_val = js2[t2][0].as<int>();
-            entry[std::to_string(js2_header[0])] = index_val;
+            entry[js2_header[0]] = index_val;
             std::cout << "[" << index_val;
 
             // Build Own Table
@@ -421,7 +483,7 @@ int main(int argc, char** argv) {
             for(int j = 1; j < js2_header.size(); j++){
                 int curr_val = js2[t2][j].as<int>();
                 send_vals[j] = curr_val;
-                entry[std::to_string(js2_header[j])] = curr_val;
+                entry[js2_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             // Send to P1
@@ -432,7 +494,7 @@ int main(int argc, char** argv) {
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (size_t j = 1; j < rec_vals.size(); j++){
                 int curr_val = rec_vals[j];
-                entry[std::to_string(js1_header[j])] = curr_val;
+                entry[js1_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
