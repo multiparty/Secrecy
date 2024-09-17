@@ -55,6 +55,25 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         }
 }
 
+unsigned long long encodeStrToInt(const std::string& str){
+    unsigned long long result = 0;
+    for (char c : str){
+        result = result * 256 + static_cast<unsigned long long>(c);
+    }
+    return result
+}
+
+std::string decodeIntToString(unsigned long long encoded){
+    std::string decoded;
+    while (encoded > 0){
+        char c = static_cast<char>(encoded % 256);
+        decoded.insert(decoded.begin(), c);
+        encoded /= 256;
+    }
+    return decoded;
+}
+
+
 int main(int argc, char** argv) {
     // Checking json file path
     if (argc < 3) {
@@ -95,7 +114,7 @@ int main(int argc, char** argv) {
         ojson js1_header_json = js1_orig[0];
         ojson js1 = ojson::array();
         for (int i = 1; i < js1_orig.size(); i++) {
-            int num = std::stoi(js1_orig[i].as<std::string>()); // Convert String to integer
+            int num = encodeStrToInt(js1_orig[i].as<std::string>()); // Convert String to integer
             js1.push_back(num);
         }
         
@@ -269,7 +288,7 @@ int main(int argc, char** argv) {
         ojson js2_header_json = js2_orig[0];
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
-            int num = std::stoi(js2_orig[i].as<std::string>()); // Convert String to integer
+            int num = encodeStrToInt(js2_orig[i].as<std::string>()); // Convert String to integer
             js2.push_back(num);
         }
         ROWS2 = static_cast<int>(js2.size());
