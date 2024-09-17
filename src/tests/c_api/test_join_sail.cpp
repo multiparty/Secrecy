@@ -410,7 +410,7 @@ int main(int argc, char** argv) {
 
             // Build Own Table
             std::vector<int> send_vals(COLS2);
-            for(int j = 0; j < js2_header.size(); j++){
+            for(int j = 1; j < js2_header.size(); j++){
                 int curr_val = js2[t2][j].as<int>();
                 send_vals[j] = curr_val;
                 entry[std::to_string(js2_header[j])] = curr_val;
