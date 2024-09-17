@@ -393,7 +393,7 @@ int main(int argc, char** argv) {
                 
         // Print P1 header
         for (int i = 1; i< js1_header.size(); i++){
-            int curr = js1_header[i].as<int>();
+            int curr = js1_header[i];
             std::cout << ", " << curr;
         }
         std::cout << "]" << std::endl;
