@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 1, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (size_t j = 1; j < rec_vals.size(); ++j) {
                int curr_val = rec_vals[j];
-               entry[std::to_string(js2_header[j])] = curr_val;
+               entry[js2_header[j]] = curr_val;
             }
 
             // Send to P2
