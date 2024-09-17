@@ -435,12 +435,7 @@ int main(int argc, char** argv) {
         for(size_t i = 0; i<js1_header_toReceive.size(); i++){
             js1_header.push_back(decodeIntToString(js1_header_toReceive[i]));
         }
-        
-        std::vector<std::string> js1_header;
-        for(size_t i = 0; i<js1_header_toSend.size(); i++){
-            js1_header.push_back(decodeIntToString(js1_header_toSend[i]));
-        }
-        
+                
         // Send P2's header to P1
         std::cout << "[";
         std::vector<long long> js2_header_toSend;
