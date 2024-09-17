@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
 
             // Build Own Table
             std::vector<int> send_vals(COLS1-1);
-            for(int j = 1; j < COLS1; j++){
+            for(int j = 1; j < js1_header.size(); j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j-1] = curr_val;
                 entry[std::to_string(js1_header[j])] = curr_val;
@@ -383,12 +383,18 @@ int main(int argc, char** argv) {
         MPI_Recv(js1_header.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // Send P2's header to P1, except key col
-        std::vector<int> js2_header;
         std::cout << "[";
+        std::vector<int> js2_header;
         for (int i = 0; i<COLS2; i++){
             int curr = js2_header_json[i].as<int>();
             js2_header.push_back(curr);
-            std::cout << curr<< ", ";
+            std::cout << curr << ", ";
+        }
+                
+        // Print P1 header
+        for (int i = 1; i< js1_header.size(); i++){
+            int curr = js1_header[i].as<int>();
+            std::cout << ", " << curr;
         }
         std::cout << "]" << std::endl;
         MPI_Send(js2_header.data(), js2_header.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
@@ -404,7 +410,7 @@ int main(int argc, char** argv) {
 
             // Build Own Table
             std::vector<int> send_vals(COLS2-1);
-            for(int j = 1; j < COLS2; j++){
+            for(int j = 1; j < js2_header.size(); j++){
                 int curr_val = js2[t2][j].as<int>();
                 send_vals[j-1] = curr_val;
                 entry[std::to_string(js2_header[j])] = curr_val;
