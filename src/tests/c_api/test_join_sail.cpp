@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 #include "../test-utils.h"
