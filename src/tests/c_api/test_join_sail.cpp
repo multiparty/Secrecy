@@ -60,7 +60,7 @@ unsigned long long encodeStrToInt(const std::string& str){
     for (char c : str){
         result = result * 256 + static_cast<unsigned long long>(c);
     }
-    return result
+    return result;
 }
 
 std::string decodeIntToString(unsigned long long encoded){
