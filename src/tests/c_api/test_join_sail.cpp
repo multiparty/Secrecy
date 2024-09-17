@@ -242,6 +242,10 @@ int main(int argc, char** argv) {
             js1_header.push_back(js1_header_json[i].as<int>());
         }
         MPI_Send(js1_header.data(), js1_header.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
+
+        for(int i = 0; i<js1_header.size(); i++){
+            js1_header[i] = decodeIntToString(js1_header[i])
+        }
         
         // Receive P2's header, except key col
         std::vector<int> js2_header(COLS2);
