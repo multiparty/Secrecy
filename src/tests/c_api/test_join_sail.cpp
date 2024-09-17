@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
         
         // Send P1's header to P2
-        std::vector<int> js1_header_toSend;
+        std::vector<long long> js1_header_toSend;
         for (int i = 0; i<COLS1; i++){
             long long curr_header = js1_header_json[i].as<long long>();
             std::cout <<curr_header;
@@ -424,8 +424,12 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
 
         // Receive P1's header from P1, except key col
-        std::vector<std::string> js1_header(COLS1);
-        MPI_Recv(js1_header.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::vector<long long> js1_header_toReceive(COLS1);
+        MPI_Recv(js1_header_toReceive.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::vector<std::string> js1_header;
+        for(size_t i = 0; i<js1_header_toReceive.size(); i++){
+            js1_header.push_back(decodeIntToString(js1_header_toReceive[i]));
+        }
 
         // Send P2's header to P1, except key col
         std::cout << "[";
