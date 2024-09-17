@@ -435,7 +435,7 @@ int main(int argc, char** argv) {
         
         std::vector<std::string> js1_header;
         for(size_t i = 0; i<js1_header_toReceive.size(); i++){
-            std::string currHeader = decodeIntToString(js1_header_toSend[i]);
+            std::string currHeader = decodeIntToString(js1_header_toReceive[i]);
             js1_header.push_back(currHeader);
         }
 
