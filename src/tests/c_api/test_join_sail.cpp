@@ -260,7 +260,7 @@ int main(int argc, char** argv) {
             // Index/Key Val
             int t1 = t1_index[i];
             long long index_val = js1[t1][0].as<int>();
-            entry[std::to_string(js1_header[0])] = index_val;
+            entry[js1_header[0]] = index_val;
             // std::cout << "[" << index_val;
 
             // Build Own Table
@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
             for(int j = 0; j < js1_header.size(); j++){
                 int curr_val = js1[t1][j].as<int>();
                 send_vals[j] = curr_val;
-                entry[std::to_string(js1_header[j])] = curr_val;
+                entry[js1_header[j]] = curr_val;
             }
 
             // Their Table from P2
@@ -424,7 +424,7 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
 
         // Receive P1's header from P1, except key col
-        std::vector<int> js1_header(COLS1);
+        std::vector<std::string> js1_header(COLS1);
         MPI_Recv(js1_header.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         // Send P2's header to P1, except key col
@@ -472,7 +472,7 @@ int main(int argc, char** argv) {
             MPI_Recv(rec_vals.data(), rec_vals.size(), MPI_LONG_LONG, 0, RESULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (size_t j = 1; j < rec_vals.size(); j++){
                 int curr_val = rec_vals[j];
-                entry[std::to_string(js1_header[j])] = curr_val;
+                entry[js1_header[j]] = curr_val;
                 std::cout << ", " << curr_val;
             }
             std::cout << "]" << std::endl;
