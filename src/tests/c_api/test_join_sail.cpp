@@ -239,8 +239,8 @@ int main(int argc, char** argv) {
         std::vector<int> js1_header_toSend;
         for (int i = 0; i<COLS1; i++){
             long long curr_header = js1_header_json[i].as<long long>();
-             std::cout <<curr_header;
-            js1_header.push_back(curr_header);
+            std::cout <<curr_header;
+            js1_header_toSend.push_back(curr_header);
         }
         MPI_Send(js1_header_toSend.data(), js1_header_toSend.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
 
