@@ -301,9 +301,7 @@ int main(int argc, char** argv) {
         // Organize body
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
-            std::cout << js2_orig[i] << std::endl;
-            int num = encodeStrToInt(js2_orig[i].as<std::string>()); // Convert String to integer
-            js2.push_back(num);
+            js2.push_back(js2_orig[i]);
         }
         ROWS2 = static_cast<int>(js2.size());
         COLS2 = static_cast<int>(js2[0].size());
