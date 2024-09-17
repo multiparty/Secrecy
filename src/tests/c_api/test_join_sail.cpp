@@ -288,6 +288,7 @@ int main(int argc, char** argv) {
         ojson js2_header_json = js2_orig[0];
         ojson js2 = ojson::array();
         for (int i = 1; i < js2_orig.size(); i++) {
+            std::cout << js2_orig[i] << std::endl;
             int num = encodeStrToInt(js2_orig[i].as<std::string>()); // Convert String to integer
             js2.push_back(num);
         }
