@@ -441,16 +441,14 @@ int main(int argc, char** argv) {
 
         // Send P2's header to P1
         std::vector<long long> js2_header_toSend;
-        std::cout << "[";
         for (int i = 0; i<COLS2; i++){
             long long curr_header = js2_header_json[i].as<long long>();
             js2_header_toSend.push_back(curr_header);
-
-            std::cout << curr_header << ", ";
         }
         MPI_Send(js2_header_toSend.data(), js2_header_toSend.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
         
         // Decode own header to string
+        std::cout << "[";
         std::vector<std::string> js2_header;
         for(size_t i = 0; i<js2_header_toSend.size(); i++){
             std::string currHeader = decodeIntToString(js2_header_toSend[i]);
@@ -461,6 +459,16 @@ int main(int argc, char** argv) {
             std::cout << ", ";
             }
         }
+
+        // Print P1 header
+        for (int i = 1; i< js1_header.size(); i++){
+            int curr = js1_header[i];
+            std::cout << curr;
+            if (i != js1_header.size()-1){
+                std::cout << ", ";
+            }
+        }
+
         std::cout << "]" << std::endl;
 
         // Construct json for the body part
