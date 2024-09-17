@@ -29,17 +29,22 @@ void download_from_s3(int rank, const std::string& filename) {
 void upload_to_s3(int rank, json output_json, const std::string& filename){
         // Convert the rank and filename to Strings
         std::string rankStr = std::to_string(rank+1);
-        std::ofstream json_file(filename);
-        if(!json_file.is_open()){
+        std::ofstream csvFile(filename);
+        if(!csvFile.is_open()){
             std::cerr << "Error openiing file: " << filename << std::endl;
             return;
         }
         
-        // Copy the content to output json file
-        json_file << pretty_print(output_json);
-        json_file.close();
+        // Convert the JSON to CSV
+        try{
+        csv::encode_csv(output_json, csvFile);
+        } catch(const std::exception& e){
+            std::cerr << "Error Converting JSON to CSV: " << e.what() << std::endl;
+        }
 
-        // Run the command
+        csvFile.close();
+
+        // Upload the csv file
         std::string awsUploadCommand = "aws s3 cp " + filename + " s3://secrecy-bucket" + rankStr +"/";
         int result = system(awsUploadCommand.c_str());
         if (result == 0) {
@@ -247,7 +252,7 @@ int main(int argc, char** argv) {
             // Add the entry to the output JSON array
             output_json.push_back(entry);
         }
-        upload_to_s3(0, output_json, "output.json");
+        upload_to_s3(0, output_json, "output.csv");
     } else if (rank == 1) {  // P2
         std::string filename = argv[2];
         if (filename.substr(filename.find_last_of(".") + 1) != "csv") {
@@ -433,7 +438,7 @@ int main(int argc, char** argv) {
             std::cout << "]" << std::endl;
             output_json.push_back(entry);
         }
-        upload_to_s3(1, output_json, "output.json");
+        upload_to_s3(1, output_json, "output.csv");
     } else {  // P3
 
         //////// Receive ROWS1 and COLS1 from P1
