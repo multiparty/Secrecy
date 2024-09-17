@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
             js1_header.push_back(decodeIntToString(js1_header_toSend[i]));
         }
         
-        // Receive P2's header, except key col
+        // Receive P2's header
         std::vector<int> js2_header(COLS2);
         MPI_Recv(js2_header.data(), COLS2, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
@@ -423,7 +423,7 @@ int main(int argc, char** argv) {
         std::cout << "/// Joined Table ///" << std::endl;
         jsoncons::json output_json = jsoncons::json::array();
 
-        // Receive P1's header from P1, except key col
+        // Receive P1's header from P1
         std::vector<long long> js1_header_toReceive(COLS1);
         MPI_Recv(js1_header_toReceive.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         std::vector<std::string> js1_header;
@@ -431,7 +431,7 @@ int main(int argc, char** argv) {
             js1_header.push_back(decodeIntToString(js1_header_toReceive[i]));
         }
 
-        // Send P2's header to P1, except key col
+        // Send P2's header to P1
         std::cout << "[";
         std::vector<int> js2_header;
         for (int i = 0; i<COLS2; i++){
