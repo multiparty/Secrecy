@@ -454,9 +454,7 @@ int main(int argc, char** argv) {
             std::string currHeader = decodeIntToString(js2_header_toSend[i]);
             js2_header.push_back(currHeader);
 
-            std::cout << currHeader;
-            std::cout << ", ";
-            }
+            std::cout << currHeader << ", ";
         }
 
         // Print P1 header
