@@ -115,9 +115,11 @@ int main(int argc, char** argv) {
         // Enumerate Headers
         ojson js1_header_json = js1_orig[0];
         std::vector<long long> js1_header_toSend; // Placeholder to send header to P2
+        std::vector<std::string> js1_header; // Vectorize from json
         for (size_t i = 0; i < js1_header_json.size(); i++) {
             long long curr_header = encodeStrToInt(js1_header_json[i].as<std::string>());
             js1_header_toSend.push_back(curr_header);
+            js1_header.push_back(js1_header_json[i].as<std::string>())
         }
 
         // Organize body
@@ -238,14 +240,7 @@ int main(int argc, char** argv) {
         jsoncons::json output_json = jsoncons::json::array();
         
         MPI_Send(js1_header_toSend.data(), js1_header_toSend.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
-
-        // Decode own header to string
-        std::vector<std::string> js1_header;
-        for(size_t i = 0; i<js1_header_toSend.size(); i++){
-            std::string currHeader = decodeIntToString(js1_header_toSend[i]);
-            js1_header.push_back(currHeader);
-        }
-        
+       
         // Receive P2's header and convert to string
         std::vector<long long> js2_header_toReceive(COLS2);
         MPI_Recv(js2_header_toReceive.data(), COLS2, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
