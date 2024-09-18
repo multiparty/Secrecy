@@ -55,6 +55,7 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         }
 }
 
+// TODO: Max 8 chars-string 
 unsigned long long encodeStrToInt(const std::string& str){
     unsigned long long result = 0;
     for (char c : str){
