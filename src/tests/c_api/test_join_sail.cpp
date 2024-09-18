@@ -117,9 +117,10 @@ int main(int argc, char** argv) {
         std::vector<long long> js1_header_toSend; // Placeholder to send header to P2
         std::vector<std::string> js1_header; // Vectorize from json
         for (size_t i = 0; i < js1_header_json.size(); i++) {
-            long long curr_header = encodeStrToInt(js1_header_json[i].as<std::string>());
-            js1_header_toSend.push_back(curr_header);
-            js1_header.push_back(js1_header_json[i].as<std::string>());
+            std::string curr_header = js1_header_json[i].as<std::string>();
+            long long decoded = encodeStrToInt(js1_header_json[i].as<std::string>());
+            js1_header_toSend.push_back(decoded);
+            js1_header.push_back(curr_header);
         }
 
         // Organize body
@@ -297,10 +298,15 @@ int main(int argc, char** argv) {
         
         // Enumerate Headers
         ojson js2_header_json = js2_orig[0];
+        std::vector<std::string> js2_header; // Vectorize own header from json
         std::vector<long long> js2_header_toSend; // Placeholder to send header to P1
+        std::cout << "[";
         for (int i = 0; i < js2_header_json.size(); i++) {
-            long long curr_header = encodeStrToInt(js2_header_json[i].as<std::string>());
-            js2_header_toSend.push_back(curr_header);
+            std::string curr_header = js2_header_json[i].as<std::string>();
+            long long decoded = encodeStrToInt(js2_header_json[i].as<std::string>());
+            js2_header_toSend.push_back(decoded);
+            js2_header.push_back(curr_header);
+            std::cout << curr_header << ", ";
         }
 
         // Organize body
@@ -434,16 +440,6 @@ int main(int argc, char** argv) {
 
         MPI_Send(js2_header_toSend.data(), js2_header_toSend.size(), MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
         
-        // Decode own header to string
-        std::cout << "[";
-        std::vector<std::string> js2_header;
-        for(size_t i = 0; i<js2_header_toSend.size(); i++){
-            std::string currHeader = decodeIntToString(js2_header_toSend[i]);
-            js2_header.push_back(currHeader);
-
-            std::cout << currHeader << ", ";
-        }
-
         // Print P1 header
         for (size_t i = 1; i< js1_header.size(); i++){
             std::string curr = js1_header[i];
