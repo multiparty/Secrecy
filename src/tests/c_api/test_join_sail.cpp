@@ -78,13 +78,22 @@ std::vector<unsigned long long> encodeStrToInt(const std::string& str){
     return result;
 }
 
-std::string decodeIntToString(unsigned long long encoded){
+std::string decodeIntToString(const std::vector<unsigned long long>& encodedVec) {
     std::string decoded;
-    while (encoded > 0){
-        char c = static_cast<char>(encoded % 256);
-        decoded.insert(decoded.begin(), c);
-        encoded /= 256;
+
+    for (unsigned long long encoded : encodedVec) {
+        std::string temp;
+        for (int i = 0; i < 8; i++) {
+            char c = static_cast<char>(encoded % 256);
+            temp.insert(temp.begin(), c);
+            encoded /= 256;
+        }
+        decoded += temp;
     }
+
+    // Remove any trailing null characters ('\0')
+    decoded.erase(decoded.find_last_not_of('\0') + 1);
+
     return decoded;
 }
 
@@ -246,11 +255,11 @@ int main(int argc, char** argv) {
 
         // Enumerate Headers
         ojson js1_header_json = js1_orig[0];
-        std::vector<long long> js1_header_toSend; // Placeholder to send header to P2
-        std::vector<std::string> js1_header; // Vectorize from json
+        std::vector<std::vector<unsigned long long>> js1_header_toSend; // Placeholder to send header to P2
+        std::vector<std::string> js1_header; // Vectorize own header from json
         for (size_t i = 0; i < js1_header_json.size(); i++) {
             std::string curr_header = js1_header_json[i].as<std::string>();
-            long long decoded = encodeStrToInt(js1_header_json[i].as<std::string>());
+            std::vector<unsigned long long> decoded = encodeStrToInt(js1_header_json[i].as<std::string>());
             js1_header_toSend.push_back(decoded);
             js1_header.push_back(curr_header);
         }
@@ -259,7 +268,7 @@ int main(int argc, char** argv) {
         MPI_Send(js1_header_toSend.data(), js1_header_toSend.size(), MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
        
         // Receive P2's header and convert to string
-        std::vector<long long> js2_header_toReceive(COLS2);
+        std::vector<std::vector<unsigned long long>> js2_header_toReceive(COLS2);
         MPI_Recv(js2_header_toReceive.data(), COLS2, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
         std::vector<std::string> js2_header;
@@ -433,19 +442,19 @@ int main(int argc, char** argv) {
 
         // Enumerate Headers
         ojson js2_header_json = js2_orig[0];
+        std::vector<std::vector<unsigned long long>> js2_header_toSend; // Placeholder to send header to P1
         std::vector<std::string> js2_header; // Vectorize own header from json
-        std::vector<long long> js2_header_toSend; // Placeholder to send header to P1
         std::cout << "[";
         for (int i = 0; i < js2_header_json.size(); i++) {
             std::string curr_header = js2_header_json[i].as<std::string>();
-            long long decoded = encodeStrToInt(js2_header_json[i].as<std::string>());
+            std::vector<unsigned long long> decoded = encodeStrToInt(js2_header_json[i].as<std::string>());
             js2_header_toSend.push_back(decoded);
             js2_header.push_back(curr_header);
             std::cout << curr_header << ", ";
         }
 
         // Receive P1's header and convert to string
-        std::vector<long long> js1_header_toReceive(COLS1);
+        std::vector<std::vector<unsigned long long>> js1_header_toReceive(COLS1);
         MPI_Recv(js1_header_toReceive.data(), COLS1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
         std::vector<std::string> js1_header;
