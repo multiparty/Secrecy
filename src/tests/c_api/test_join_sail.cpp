@@ -267,7 +267,7 @@ int main(int argc, char** argv) {
         // Send header vals  to P2
         for (size_t i = 0; i < COLS1; i++){
             int vecSize = js1_header_toSend.size();
-            MPI_Send(vecSize, 1, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
+            MPI_Send(&vecSize, 1, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
             MPI_Send(js1_header_toSend[i].data(), vecSize, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD);
         }
 
@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> js2_header;
         for (size_t i = 0; i < COLS2; i++){
             int vecSize;
-            MPI_Recv(vecSize, 1, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&vecSize, 1, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::vector<unsigned long long> curr_header(vecSize);
             MPI_Recv(curr_header.data(), vecSize, MPI_LONG_LONG, 1, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             js2_header.push_back(decodeIntToString(curr_header));
@@ -461,7 +461,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> js1_header;
         for (size_t i = 0; i < COLS1; i++){
             int vecSize;
-            MPI_Recv(vecSize, 1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&vecSize, 1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::vector<unsigned long long> curr_header(vecSize);
             MPI_Recv(curr_header.data(), vecSize, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             js1_header.push_back(decodeIntToString(curr_header));
@@ -470,7 +470,7 @@ int main(int argc, char** argv) {
         // Send header vals to P1
         for (size_t i = 0; i < COLS2; i++){
             int vecSize = js2_header_toSend.size();
-            MPI_Send(vecSize, 1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
+            MPI_Send(&vecSize, 1, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
             MPI_Send(js2_header_toSend[i].data(), vecSize, MPI_LONG_LONG, 0, HEADER_TAG, MPI_COMM_WORLD);
         }
 
