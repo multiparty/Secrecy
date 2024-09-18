@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
         for (size_t i = 0; i < js1_header_json.size(); i++) {
             long long curr_header = encodeStrToInt(js1_header_json[i].as<std::string>());
             js1_header_toSend.push_back(curr_header);
-            js1_header.push_back(js1_header_json[i].as<std::string>())
+            js1_header.push_back(js1_header_json[i].as<std::string>());
         }
 
         // Organize body
