@@ -55,11 +55,25 @@ void upload_to_s3(int rank, json output_json, const std::string& filename){
         }
 }
 
-// TODO: Max 8 chars-string 
-unsigned long long encodeStrToInt(const std::string& str){
-    unsigned long long result = 0;
-    for (char c : str){
-        result = result * 256 + static_cast<unsigned long long>(c);
+std::vector<unsigned long long> encodeStrToInt(const std::string& str){
+    std::vector<unsigned long long> result;
+    unsigned long long current = 0;
+    int count = 0;
+
+    for (int i = 0; i< str.size(); i++){
+        current = current * 256 + static_cast<unsigned long long>(str[i]);
+        count++;
+
+        if (count == 8){
+            result.push_back(current);
+            current = 0;
+            count = 0;
+        }
+        
+    }
+    // Push remaining
+    if(current != 0){
+        result.push_back(current);
     }
     return result;
 }
